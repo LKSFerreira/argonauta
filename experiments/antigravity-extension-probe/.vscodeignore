@@ -1,0 +1,8 @@
+src/**
+testes/**
+tsconfig.json
+dist/testes/**
+**/*.map
+node_modules/@types/**
+node_modules/typescript/**
+README.md

@@ -1,0 +1,50 @@
+{
+  "name": "argonauta-antigravity-extension-probe",
+  "displayName": "Argonauta — Verificação de Compatibilidade",
+  "description": "Gate isolado para validar APIs públicas necessárias no Antigravity IDE.",
+  "version": "0.1.0",
+  "private": true,
+  "publisher": "argonauta-local",
+  "engines": {
+    "vscode": "^1.85.0",
+    "node": ">=20"
+  },
+  "categories": [
+    "Other"
+  ],
+  "extensionKind": [
+    "ui"
+  ],
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": true
+    },
+    "virtualWorkspaces": {
+      "supported": true
+    }
+  },
+  "activationEvents": [
+    "onCommand:argonauta.verificarCompatibilidade"
+  ],
+  "main": "./dist/src/extensao.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "argonauta.verificarCompatibilidade",
+        "title": "Check Compatibility",
+        "category": "Argonauta"
+      }
+    ]
+  },
+  "scripts": {
+    "limpar": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\"",
+    "compilar": "npm run limpar && tsc -p tsconfig.json",
+    "test": "npm run compilar && node --test dist/testes/configuracao.test.js dist/testes/controle-assincrono.test.js dist/testes/armazenamento-seguro.test.js dist/testes/relatorio.test.js",
+    "verificar": "npm test"
+  },
+  "devDependencies": {
+    "@types/node": "20.19.43",
+    "@types/vscode": "1.107.0",
+    "typescript": "5.9.3"
+  }
+}
