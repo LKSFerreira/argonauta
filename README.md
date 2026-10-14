@@ -26,14 +26,6 @@ Argonauta is an independent extension project designed first for **Antigravity I
 
 The first release target is **Web Assisted**, not autonomous web automation. Gemini Web remains separate from the extension and is used through the user’s normal, legitimate session. Future support for VS Code or an official API-backed agent depends on tested host capabilities, public APIs, and applicable terms.
 
-## 🧭 Product modes
-
-| Mode | Purpose | Status |
-| --- | --- | --- |
-| **Web Assisted** | Review context, copy a prompt, open a supported browser flow, import a response, and inspect a diff. | Planned MVP |
-| **Official API** | Use a documented provider API with the user’s own credentials, explicit costs, and approval gates. | Future, conditional |
-| **Web Bridge** | Bidirectional integration with a web experience. | Research only; blocked until a public, allowed, and stable path is proven |
-
 ## 🛡️ Non-negotiable principles
 
 - **No credential collection.** Argonauta will not request passwords, two-factor codes, session cookies, login tokens, or browser profiles.
@@ -55,40 +47,17 @@ The first release target is **Web Assisted**, not autonomous web automation. Gem
 
 </details>
 
-## 🚦 Current status
+## 🗺️ Roadmap and Project Status
 
-The project is at **M0 — Foundation / Discovery**. The immediate work is evidence gathering, not feature implementation.
+Argonauta is built through a disciplined, evidence-based engineering process. To prevent broken promises, security risks, or unviable integrations, every capability progresses through strict **Discovery Gates** and automated/manual validation steps before implementation.
 
-- [x] Product requirements and discovery plan documented.
-- [x] Initial compatibility matrix and project roadmap created.
-- [x] Record Antigravity IDE host capabilities and versions.
-- [x] Validate the available browser flow and document its limitations without credential interception.
-- [x] Validate Chrome Native Messaging and the public extension APIs required by the bridge.
-- [x] Freeze protocol `1.0`, binary fixtures, and robustness limits.
-- [ ] Implement and validate the authorized local transport for POC-05B Stage 2.
-- [ ] Decide the G1 and G3 gates before any claim of web automation.
+Developers and contributors can follow the exact construction of the application, including current phases, completed POCs, validated test reports, and future milestones in the [**Roadmap (ROADMAP.md)**](ROADMAP.md).
 
-## 🧪 Discovery gates
-
-| Gate | What must be proven | Outcome |
-| --- | --- | --- |
-| **G1 — Usable web flow** | Gemini Web works in Antigravity IDE’s supported browser flow, or an external-browser fallback is viable. | Enables a Web Assisted experience. |
-| **G2 — Useful manual MVP** | Context review, explicit handoff, patch import, diff review, consent, and basic tests work together. | Enables a transparent Web Assisted beta. |
-| **G3 — Bidirectional integration** | A documented, testable, allowed, and compatible communication channel exists. | Only then may advanced synchronization be considered. |
-| **G4 — Autonomous agent** | G3 is approved or an official API supports the necessary capabilities. | Enables correctly named agent features. |
-
-## 🗺️ Roadmap
-
-1. **Discovery** — test host and browser capabilities, document evidence, and decide the gates.
-2. **Web Assisted prototype** — build approved-context handoff, response import, and diff review.
-3. **Open-source beta** — add accessibility, guardrails, CI, documentation, and real host validation.
-4. **Official API agent** — only with a documented provider, user-owned credentials, and explicit approval for sensitive actions.
-5. **Web Bridge** — only if G3 proves the path is technically and contractually viable.
 
 ## 📚 Documentation
 
 - [Product Requirements Document](PRD.md) — scope, safeguards, hypotheses, experiments, and acceptance criteria.
-- [Roadmap](ROADMAP.md) — current phase, next delivery, and open decisions.
+- [Roadmap](ROADMAP.md) — engineering progression, discovery gates, phase traceability, and current validation status.
 - [Compatibility matrix](docs/validation/compatibility-matrix.md) — evidence by host, version, operating system, and result.
 - [Discovery implementation plan](.metadocs/implementation_plan/2026-10-14-discovery.md) — active validation plan.
 - [Project history](HISTORY.md) — recorded milestones.
@@ -152,14 +121,6 @@ O Argonauta é um projeto de extensão independente, pensado primeiro para o **A
 
 O alvo da primeira versão é o modo **Web Assistido**, não a automação autônoma da web. O Gemini Web permanece separado da extensão e é usado pela sessão normal e legítima do usuário. O suporte futuro ao VS Code ou a um agente por API oficial depende de capacidades testadas do host, APIs públicas e termos aplicáveis.
 
-## 🧭 Modos do produto
-
-| Modo | Objetivo | Situação |
-| --- | --- | --- |
-| **Web Assistido** | Revisar contexto, copiar um prompt, abrir um fluxo de navegador compatível, importar uma resposta e inspecionar o diff. | MVP planejado |
-| **API Oficial** | Usar API documentada de um provedor com credenciais próprias, custos explícitos e aprovações. | Futuro e condicionado |
-| **Web Bridge** | Integração bidirecional com uma experiência web. | Apenas pesquisa; bloqueada até haver caminho público, permitido e estável |
-
 ## 🛡️ Princípios inegociáveis
 
 - **Sem coleta de credenciais.** O Argonauta não solicitará senhas, códigos de dois fatores, cookies de sessão, tokens de login ou perfis de navegador.
@@ -181,40 +142,16 @@ O alvo da primeira versão é o modo **Web Assistido**, não a automação autô
 
 </details>
 
-## 🚦 Estado atual
+## 🗺️ Roadmap e Construção da Aplicação
 
-O projeto está em **M0 — Fundação / Discovery**. O trabalho imediato é coletar evidências, não implementar funcionalidades.
+O Argonauta é construído por meio de um processo rigoroso de engenharia guiado por evidências. Para evitar falsas promessas, riscos de segurança ou integrações inviáveis, cada funcionalidade passa por **Gates de Discovery** e etapas estruturadas de validação manual e automatizada antes da implementação definitiva.
 
-- [x] PRD e plano de discovery documentados.
-- [x] Matriz inicial de compatibilidade e roadmap criados.
-- [x] Registrar capacidades e versões do host Antigravity IDE.
-- [x] Validar o fluxo de navegador disponível e documentar suas limitações sem interceptar credenciais.
-- [x] Validar Chrome Native Messaging e as APIs públicas da extensão necessárias à ponte.
-- [x] Congelar protocolo `1.0`, fixtures binárias e limites de robustez.
-- [ ] Implementar e validar o transporte local autorizado da Etapa 2 da POC-05B.
-- [ ] Decidir os gates G1 e G3 antes de qualquer alegação de automação web.
-
-## 🧪 Gates de discovery
-
-| Gate | O que precisa ser comprovado | Resultado |
-| --- | --- | --- |
-| **G1 — Fluxo web utilizável** | Gemini Web funciona no fluxo de navegador suportado pelo Antigravity IDE, ou há fallback viável no navegador externo. | Habilita uma experiência Web Assistido. |
-| **G2 — MVP manual útil** | Revisão de contexto, transferência explícita, importação de patch, revisão de diff, consentimento e testes básicos funcionam em conjunto. | Habilita um beta Web Assistido transparente. |
-| **G3 — Integração bidirecional** | Existe um canal documentado, testável, permitido e compatível. | Somente então poderá ser considerada sincronização avançada. |
-| **G4 — Agente autônomo** | G3 foi aprovado ou uma API oficial oferece as capacidades necessárias. | Habilita funcionalidades de agente corretamente nomeadas. |
-
-## 🗺️ Roadmap
-
-1. **Discovery** — testar capacidades do host e do navegador, documentar evidências e decidir os gates.
-2. **Protótipo Web Assistido** — criar transferência de contexto aprovado, importação de resposta e revisão de diff.
-3. **Beta open source** — adicionar acessibilidade, guardrails, CI, documentação e validação real nos hosts anunciados.
-4. **Agente via API oficial** — somente com provedor documentado, credenciais do usuário e aprovação explícita para ações sensíveis.
-5. **Web Bridge** — somente se G3 provar viabilidade técnica e contratual.
+Qualquer desenvolvedor pode acompanhar detalhadamente **como a aplicação está sendo construída**, quais experimentos foram validados, as decisões arquiteturais congeladas e os próximos marcos no [**Roadmap Oficial (ROADMAP.md)**](ROADMAP.md).
 
 ## 📚 Documentação
 
 - [Documento de Requisitos do Produto](PRD.md) — escopo, salvaguardas, hipóteses, experimentos e critérios de aceite.
-- [Roadmap](ROADMAP.md) — fase atual, próxima entrega e decisões em aberto.
+- [Roadmap](ROADMAP.md) — rastreabilidade da construção, gates de discovery, fases do projeto e evidências técnicas.
 - [Matriz de compatibilidade](docs/validation/compatibility-matrix.md) — evidências por host, versão, sistema operacional e resultado.
 - [Plano de implementação de discovery](.metadocs/implementation_plan/2026-10-14-discovery.md) — plano de validação ativo.
 - [Histórico do projeto](HISTORY.md) — marcos registrados.
