@@ -44,12 +44,12 @@ As fixtures permaneceram byte a byte idênticas:
 
 O Native Messaging Host registrado em `HKCU` usa um caminho absoluto. A migração não executou scripts de instalação e não alterou o Registro do Windows. Posteriormente, o mantenedor executou manualmente a desinstalação e a instalação no novo caminho, ambas concluídas com sucesso.
 
-Em 14/10/2026, a repetição manual pelo novo caminho foi aprovada: a extensão `0.1.0`, com identificador `kmhnfligldbfbjmdmodckpmbnfmehfba`, exibiu **PONG recebido · protocolo 1.0 · host 0.1.0**. O roteiro e o registro sanitizado estão em [Chrome Native Messaging](manual-tests/chrome-native-messaging.md).
+Em 14/10/2026, a repetição manual pelo novo caminho foi aprovada: a extensão `0.1.0`, com identificador `kmhnfligldbfbjmdmodckpmbnfmehfba`, exibiu **PONG recebido · protocolo 1.0 · host 0.1.0**. O roteiro e o registro sanitizado estão em [Chrome Native Messaging](manual-tests/01_chrome-native-messaging.md).
 
 Os procedimentos reproduzíveis estão separados por aplicação:
 
-- [Chrome Native Messaging](manual-tests/chrome-native-messaging.md);
-- [compatibilidade com o Antigravity IDE](manual-tests/antigravity-compatibility.md).
+- [Chrome Native Messaging](manual-tests/01_chrome-native-messaging.md);
+- [compatibilidade com o Antigravity IDE](manual-tests/02_antigravity-compatibility.md).
 
 As duas repetições após a migração estão aprovadas. No Antigravity IDE, o relatório terminou com 9 `pass`, 0 `fail` e 0 `unsupported`; o progresso e a mensagem informativa foram concluídos e a limpeza final confirmou a ausência do segredo temporário.
 

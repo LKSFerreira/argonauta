@@ -6,9 +6,10 @@ Este diretório reúne validações que dependem de interação com aplicações
 
 | Roteiro | Finalidade | Estado após a migração |
 |---|---|---|
-| [Chrome Native Messaging](chrome-native-messaging.md) | Confirmar o fluxo Chrome → Native Host → Chrome e a resposta PONG. | `pass` em 14/10/2026 |
-| [Antigravity IDE](antigravity-compatibility.md) | Confirmar o carregamento da extensão e as APIs públicas necessárias. | `pass` em 14/10/2026 |
-| [Toolchain Win32](win32-toolchain-installation.md) | Confirmar MSVC C++, Windows SDK e compilação nativa segura no host. | `pass` em 14/10/2026 |
+| [01 — Chrome Native Messaging](01_chrome-native-messaging.md) | Confirmar o fluxo Chrome → Native Host → Chrome e a resposta PONG. | `pass` em 14/10/2026 |
+| [02 — Antigravity IDE](02_antigravity-compatibility.md) | Confirmar o carregamento da extensão e as APIs públicas necessárias. | `pass` em 14/10/2026 |
+| [03 — Toolchain Win32](03_win32-toolchain-installation.md) | Confirmar MSVC C++, Windows SDK e compilação nativa segura no host. | `pass` em 14/10/2026 |
+| [04 — Segurança de Named Pipe Win32](04_win32-named-pipe-security.md) | Validar DACL, SID de logon e fail-closed do helper diagnóstico nativo (POC-05B). | `PENDENTE` |
 
 ## Regras para registrar evidências
 
