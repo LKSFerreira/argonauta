@@ -1,619 +1,533 @@
-# Argonauta — Product Requirements Document (PRD)
+# Argonauta — Documento de Requisitos do Produto (PRD)
 
-> **Tagline (proposta):** Navigate beyond the limits.
->
-> **Produto:** Argonauta — extensão independente desenvolvida e validada primeiro para Antigravity IDE, com compatibilidade futura com VS Code.
->
-> **Versão do documento:** 0.1.1 (rascunho para validação; Antigravity IDE-first)
->
-> **Data:** 14 de outubro de 2026
->
-> **Status:** Discovery / prova de conceito; **nenhuma integração com o Gemini Web foi validada**.
->
-> **Idioma do planejamento:** Português (Brasil). **Idioma principal do produto e da divulgação:** Inglês, com estrutura pronta para localização PT-BR.
+> **Produto:** Argonauta — extensão open source de assistência e agência de programação, desenvolvida e validada primeiro no Google Antigravity IDE.  
+> **Visão do produto:** uma experiência de agente de programação integrada à IDE, com painel próprio, contexto de projeto, conversação, planejamento, ferramentas, alterações revisáveis e provedores intercambiáveis.  
+> **Motivação original prioritária:** investigar a utilização **permitida, estável e verificável** da experiência Gemini Web — incluindo o acesso ao modelo identificado pelo mantenedor como **Gemini 4 Argon** em sua assinatura **Google AI Pro** — como possível mecanismo de inferência para o agente.  
+> **Versão do documento:** 0.2.0 — revisão de alinhamento de produto proposta para aprovação do mantenedor.  
+> **Data-base:** 14 de outubro de 2026.  
+> **Referência técnica consultada:** `main`, commit `01a86b6ca6f22d98babb61743af590a8612389f6`.  
+> **Estado:** fundação e experimentos iniciais validados; transporte IPC POC-05B bloqueado; **integração Gemini Web agêntica não validada**; extensão final e MVP de produto ainda não implementados.  
+> **Idioma:** conteúdo e requisitos atuais em português brasileiro, conforme `AGENTS.md` e `.agents/rules/language.md`; internacionalização futura depende de decisão explícita.
+
+## 0. Norte do produto e regras de interpretação
+
+**Argonauta não é, em sua visão final, apenas um copiador de prompts, uma interface de chat isolada, um cliente de API ou uma ponte IPC.** É uma extensão agêntica de programação, destinada a oferecer uma experiência de trabalho comparável, em categoria de produto, à de Codex, Claude Code e Kilo Code, sem reproduzir identidade, código, design proprietário ou prometer paridade funcional não demonstrada.
+
+A interação desejada é direta: o desenvolvedor abre o **ícone do Argonauta na barra de atividades lateral da IDE**, conversa no painel, compartilha contexto de forma controlada, solicita análise ou execução, acompanha o plano e as etapas, revisa as alterações e autoriza operações sensíveis. A experiência deve existir dentro do Antigravity IDE, não depender de o usuário programar no aplicativo VS Code.
+
+A **hipótese de produto que originou o Argonauta** é aproveitar, quando legitimamente possível, a experiência do Gemini Web disponibilizada pela assinatura Google AI Pro do próprio usuário, inclusive o modelo Gemini 4 Argon conforme observado naquela interface. O fato de um modelo aparecer no navegador **não comprova** acesso por API, permissão para automação, uso ilimitado, estabilidade de disponibilidade ou viabilidade de tool calling bidirecional.
+
+O Argonauta deverá diferenciar permanentemente:
+
+1. **Visão final:** agente de programação completo e centrado na IDE, independente do provedor.
+2. **Motivação e hipótese prioritária:** viabilizar a experiência com Gemini Web/Argon, focando o desenvolvimento na solidez técnica e segurança da ferramenta, sem impor limites no desenvolvimento por restrições contratuais externas, cabendo ao usuário a ciência e responsabilidade pelos riscos.
+3. **Primeira entrega funcional:** MVP Web Assistido, com troca deliberada de contexto/respostas, sem automação simulada.
+4. **Alternativa programática:** agente por API oficial, com chave, condições de acesso e custos próprios, sem presumir direitos derivados do Google AI Pro.
+5. **Infraestrutura de pesquisa:** POCs, Named Pipes, Chrome Native Messaging e contratos. São meios técnicos, não substitutos das capacidades do produto.
+
+**Regra de priorização:** uma tarefa de infraestrutura deve declarar que capacidade ou gate de produto atende, por que é necessária agora, como será validada e por que não pode esperar. O bloqueio de uma POC opcional não interrompe automaticamente o progresso do MVP e do núcleo da extensão.
+
+Este documento define **o que** o produto deve entregar. `ROADMAP.md` define marcos, ordem e estados; ADRs registram decisões arquiteturais; `docs/validation/` guarda evidências; `HISTORY.md` registra acontecimentos. Um requisito planejado neste PRD não é funcionalidade implementada.
 
 ## 1. Resumo executivo
 
-**Argonauta** é uma extensão open source concebida **primeiro para o Antigravity IDE**, onde o mantenedor desenvolve, executa e testa seus projetos. Como objetivo posterior, buscará compatibilidade com **Visual Studio Code** e outras IDEs que exponham APIs compatíveis. Sua finalidade é aproximar a experiência de modelos de IA disponíveis em interfaces web do fluxo de desenvolvimento dentro da IDE.
+O **Argonauta** é uma extensão independente e open source para programação assistida e agêntica no **Google Antigravity IDE**, com compatibilidade futura — a ser comprovada — com VS Code e outros hosts que disponibilizem APIs adequadas.
 
-A oportunidade inicial surgiu quando assinantes **Google AI Pro** passaram a conseguir selecionar **Gemini 4 Argon** no aplicativo web Gemini, enquanto o acesso ao mesmo modelo não estava disponível na seleção nativa de agentes do Antigravity IDE/CLI para esse nível de assinatura (observação do idealizador em 14/10/2026; disponibilidade sujeita a mudanças).
+A oportunidade surgiu da diferença observada em 14/10/2026 entre o modelo **Gemini 4 Argon** disponível na experiência **Gemini Web** do mantenedor com **Google AI Pro** e as opções apresentadas nos recursos de agente do Antigravity IDE/CLI para aquela assinatura. Trata-se de observação pontual, sujeita a mudanças e não generalizável para outras contas.
 
-O objetivo **não** é afirmar que a assinatura Pro dá direito de consumir a API Gemini, desbloquear limites ou contornar controles de acesso. O objetivo é investigar se uma experiência de desenvolvimento assistido pode ser oferecida **usando os caminhos de acesso legitimamente disponibilizados ao usuário**, com autorização explícita, segurança, transparência e respeito aos termos aplicáveis.
+**Objetivo de experiência:** permitir conversação contextual com código, planejamento de tarefas, consulta e modificação controlada de arquivos, execução autorizada de ferramentas/testes, histórico, acompanhamento da atividade, diffs, checkpoints e respostas do provedor — com nível real de automação dependente das capacidades comprovadas de cada integração.
 
-**Ambiente exclusivo de desenvolvimento do mantenedor:** **Antigravity IDE**. O VS Code não é ferramenta necessária para criar, editar, depurar ou empacotar este projeto. Seu uso em testes de compatibilidade poderá ser delegado a voluntários ou adiado para uma etapa posterior.
+**Objetivo distintivo de pesquisa:** descobrir se existe mecanismo público, documentado, tecnicamente estável e permitido para utilizar a experiência Gemini Web/Argon como provedor bidirecional de uma extensão agêntica. **Não há aprovação desse mecanismo.** Uma ponte funcional entre IDE e Chrome, isoladamente, não demonstra acesso agêntico ao Gemini Web.
 
-**Visão de longo prazo:** uma experiência de agente de programação — chat contextual, sugestões, diffs, aplicação de alterações, ferramentas locais e sessões — com backends intercambiáveis.
+Caso a hipótese de integração não seja viável ou permitida, o projeto deverá continuar útil com **Web Assistido** e, se implementado, **agente por API oficial**. Essa contingência preserva o produto open source; **não redefine retroativamente a hipótese original como alcançada**.
 
-**Hipótese de alto risco:** uma integração bidirecional e sustentável com o Gemini Web poderá ser construída usando mecanismos permitidos e estáveis. **Essa hipótese ainda não está provada.** Um navegador incorporado ou uma aba do Gemini **não** equivale a um agente programático.
+O desenvolvimento, depuração e a validação inicial do mantenedor ocorrem no Antigravity IDE, em Windows. O uso de bibliotecas de tipos e interfaces de extensão compatíveis com VS Code não exige a instalação nem a utilização do aplicativo VS Code.
 
-## 2. Problema e oportunidade
+## 2. Problema, oportunidade e posicionamento
 
-### 2.1 Problema
+### 2.1 Problemas
 
-- Alguns assinantes conseguem usar um modelo no **Gemini Web**, mas não conseguem selecioná-lo nos recursos de agente de suas IDEs com o mesmo plano.
-- Copiar código manualmente entre navegador e editor interrompe o fluxo de trabalho, dificulta contexto e aumenta risco de aplicar mudanças sem revisão.
-- Extensões que prometem “usar o modelo da web como API” frequentemente dependem de interfaces privadas, cookies de sessão ou automação frágil, o que traz riscos de segurança, disponibilidade e conformidade.
+- Um usuário pode visualizar determinado modelo no Gemini Web e não dispor dele nos agentes integrados da IDE, de acordo com a conta, plano, disponibilidade e políticas vigentes.
+- A troca manual entre navegador e editor dificulta manter contexto, acompanhar decisões, revisar alterações e retomar tarefas.
+- Um agente que lê e escreve no workspace cria riscos de vazamento, execução indevida, prompt injection e modificações não autorizadas.
+- Integrações que simulam APIs usando cookies, endpoints privados ou automação não autorizada são frágeis e potencialmente incompatíveis com os termos do provedor.
+- Infraestrutura técnica pode avançar sem criar valor observável ao desenvolvedor, se a experiência de produto e seus gates não forem priorizados.
 
 ### 2.2 Oportunidade
 
-Oferecer uma experiência **IDE-first**, começando com um fluxo web **assistido e verificável**, e evoluindo para autonomia apenas quando houver um canal de comunicação tecnicamente demonstrado e permitido.
+Construir uma experiência **IDE-first**, com identidade visual própria e arquitetura de capacidades reais, que comece útil de forma assistida, evolua para um agente programático quando autorizado e investigue o caminho Gemini Web sem atalhos inseguros.
 
 ### 2.3 Proposta de valor
 
-**Para o desenvolvedor:** acessar o fluxo de raciocínio disponível na sua própria conta web sem sair desnecessariamente do contexto de programação; enviar trechos com controle de privacidade, receber soluções, visualizar diffs e aplicar mudanças de modo seguro.
+**Para o desenvolvedor:** uma área de trabalho agêntica dentro da IDE para perguntar, planejar, analisar o projeto, revisar diffs e autorizar ações, com contexto explícito e escolha transparente de provedor.
 
-**Para a comunidade:** alternativa open source, auditável, sem coleta de credenciais e com linguagem clara sobre o que é — e não é — suportado.
+**Para quem tem Google AI Pro:** uma pesquisa orientada a viabilizar o uso legítimo da experiência Gemini Web/Argon na IDE, sem prometer que a assinatura corresponda a créditos de API ou a um backend automatizado.
 
-### 2.4 Posicionamento e marca
+**Para a comunidade:** software open source auditável, com decisões, limitações, testes e registros de segurança verificáveis.
 
-- **Nome de trabalho:** Argonauta.
-- **Slug do repositório/extensão (proposto):** `argonauta`.
-- **Slogan de trabalho:** *Navigate beyond the limits.*
-- **Tom:** técnico, ousado, transparente; sem alegações enganosas de desbloqueio.
-- **Independência:** não é produto oficial, patrocinado ou afiliado ao Google, Microsoft ou Anthropic.
-- **Identidade visual:** evitar logos oficiais, marcas confundíveis ou aparência de extensão oficial.
-- **Antes do lançamento:** confirmar disponibilidade de nome, publisher, domínio e eventuais conflitos de marca.
+### 2.4 Nome, marca e identidade
 
-## 3. Público-alvo e cenários de uso
+- Nome de trabalho: **Argonauta**; slug proposto: `argonauta`.
+- Slogan proposto: *Navigate beyond the limits.*
+- Ícone próprio e reconhecível na barra lateral da IDE, com apresentação consistente no painel e no pacote da extensão.
+- Não usar logos nem elementos que induzam confusão com produtos oficiais do Google, Microsoft, Anthropic ou OpenAI.
+- Confirmar publisher, namespace, licença e eventuais conflitos de marca antes de publicar.
+- Compatibilidade e capacidades devem ser comunicadas apenas após testes reais.
+
+## 3. Público-alvo e jornadas
 
 | Perfil | Necessidade | Prioridade |
 |---|---|---|
-| Desenvolvedor com Google AI Pro e Argon disponível no Gemini Web | Trabalhar com seu código enquanto utiliza a experiência web já oferecida à conta | Primário |
-| Usuário do Antigravity IDE | Fluxo integrado mesmo sem o Argon no seletor nativo | **Prioridade P0 — plataforma principal** |
-| Usuário do VS Code | Interface consistente de assistência à programação e revisão de patches | **Secundário — validar após MVP no Antigravity** |
-| Desenvolvedor com chave de API oficial | Agente com backend programático e ferramentas estruturadas | Secundário; caminho de autonomia |
-| Mantenedor open source | Auditar segurança e contribuir com provedores/adapters | Secundário |
+| Desenvolvedor com Google AI Pro e Gemini 4 Argon disponível no Gemini Web | Investigar uso integrado legítimo dessa experiência para trabalhar com código | Origem do produto / pesquisa prioritária |
+| Desenvolvedor que utiliza Antigravity IDE | Painel e ferramentas de agente no ambiente principal | P0 de plataforma |
+| Desenvolvedor que deseja assistência manual segura | Transferir contexto e respostas com prévia e diff | P0 da primeira entrega |
+| Usuário com acesso a API oficial | Obter comunicação e ferramentas programáticas por backend documentado | Caminho de agente condicionado |
+| Usuário de VS Code e hosts compatíveis | Experiência equivalente após homologação | Posterior |
+| Colaborador open source | Entender contratos, segurança e contribuir com implementações isoladas | Contínuo |
 
-### 3.1 Jobs to be done
+**Jornadas desejadas:**
 
-1. **Enquanto programo**, quero pedir ajuda sobre a seleção/arquivo/projeto sem recriar manualmente todo o contexto.
-2. **Antes de alterar arquivos**, quero visualizar exatamente o que será modificado e poder aprovar ou rejeitar.
-3. **Quando uso Gemini Web**, quero manter a autenticação sob controle do navegador/Google, sem entregar senha ou cookies à extensão.
-4. **Se a integração web não for possível**, quero uma alternativa honesta e útil, sem fingir que estou usando um agente autônomo.
+1. **Perguntar:** abrir o Argonauta pela barra lateral, escolher contexto, fazer uma pergunta e acompanhar uma resposta do provedor configurado, conforme suas capacidades reais.
+2. **Planejar:** pedir uma solução para um problema, receber etapas e analisar arquivos relevantes antes de aprovar qualquer alteração.
+3. **Agir:** após habilitação de backend apropriado e gates, autorizar o agente a editar arquivos, executar testes e relatar resultados, com acompanhamento de etapas e opção de interromper.
+4. **Revisar:** inspecionar mudanças por arquivo, aprovar/rejeitar, comparar com conteúdo anterior e recuperar alterações quando tecnicamente possível.
+5. **Gemini Web:** usar a sessão normal do navegador para o fluxo manual; integração bidirecional somente se existir mecanismo comprovadamente permitido.
 
-## 4. Objetivos, métricas e limites
+## 4. Objetivos e métricas
 
-### 4.1 Objetivos de produto
+### 4.1 Objetivos
 
-**O1 — Viabilidade técnica:** estabelecer, mediante experimento reproduzível **no Antigravity IDE**, se Gemini Web autenticado e Argon podem funcionar dentro de um navegador integrado do host; usar navegador externo como alternativa quando necessário.
+A revisão preserva os objetivos originais **O1–O4** e acrescenta os objetivos **O5–O7** que tornam a visão agêntica e o Gate G3-W mais explícitos.
 
-**O2 — UX mínima útil:** usuário consegue selecionar contexto no editor, montar um prompt, acessar Gemini, copiar/importar uma resposta e revisar/aplicar um patch com segurança.
+- **O1 — Viabilidade técnica do fluxo web:** investigar a utilização do Gemini Web e do Argon em navegador integrado do Antigravity e documentar fallback externo quando necessário. A incompatibilidade observada no Jetski deve permanecer como evidência, sem diagnóstico causal inventado.
+- **O2 — UX mínima útil:** selecionar contexto no editor, montar prompt, acessar Gemini Web pela sessão legítima, copiar/importar uma resposta e revisar/aplicar patch com segurança.
+- **O3 — Evolução controlada:** adicionar backend programático **oficial** e provedores intercambiáveis sem reescrever a UI e o orquestrador.
+- **O4 — Credibilidade:** entregar extensão auditável, matriz de compatibilidade real, documentação e demonstrações reproduzíveis.
+- **O5 — Experiência agêntica como produto final:** construir ícone lateral, painel, chat contextual, planejamento, ferramentas, diffs, histórico e ciclo de tarefas conforme capacidades realmente implementadas.
+- **O6 — Investigação Gemini Web/Argon:** viabilizar tecnicamente o uso bidirecional da experiência Gemini Web/Argon sem impor limites no desenvolvimento por regras contratuais de terceiros, assegurando que o usuário final esteja plenamente ciente dos riscos e assuma o uso por sua conta e responsabilidade.
+- **O7 — Governança de prioridades:** relacionar infraestrutura a requisitos e gates, preservando o avanço de M1 independentemente do bloqueio da POC-05B.
 
-**O3 — Evolução controlada:** criar arquitetura de provedores para adicionar um backend programático **oficial** sem reescrever a UI e o orquestrador.
+### 4.2 Metas de validação (não são resultados observados)
 
-**O4 — Credibilidade:** entregar extensão auditável, documentação em inglês, matriz de compatibilidade real e demonstrações reproduzíveis.
-
-### 4.2 Métricas de validação (metas iniciais, não resultados)
-
-| Métrica | Meta para a prova de conceito / beta | Método |
+| Métrica | Meta | Evidência |
 |---|---|---|
-| Abertura do Gemini | Passar primeiro no Antigravity IDE; VS Code só após estabilização | Roteiro manual |
-| Login Google | Funcionar de forma normal; **sem captura de credenciais** | Teste em conta própria |
-| Visibilidade do Argon no navegador integrado | Aparecer e responder na conta Pro testada | Evidência com data, versão e dados pessoais ocultos |
-| Fluxo seleção → prompt | Concluir em até 3 ações deliberadas do usuário | Teste de usabilidade |
-| Aplicação segura de patches | 100% das gravações precedidas de revisão/aprovação no MVP | Testes automatizados e manuais |
-| Vazamento de credenciais nos logs | 0 ocorrências | Inspeção e testes |
-| Compatibilidade | Reportar resultados por versão de IDE e SO, não presumir compatibilidade | Matriz de testes |
-| Qualidade do release | Build, lint, testes unitários e empacotamento VSIX sem erros | CI |
+| Ícone lateral | Ícone do Argonauta acessível na Activity Bar; view abre e restaura | Teste manual no Antigravity real |
+| Interface | Painel de conversa/contexto/atividade navegável por teclado e responsivo | Testes de UI e usabilidade |
+| Handoff de contexto | Somente dados visualizados e aprovados saem para clipboard/provedor | Testes negativos e manuais |
+| Fluxo seleção → prompt | Concluir em até três ações deliberadas, quando razoável | Roteiro de usabilidade |
+| Aplicação de patch no MVP | 100% das escritas precedidas por prévia e autorização específica | Testes e logs sanitizados |
+| Logs | Nenhum segredo, cookie ou dado sensível exposto | Testes de segurança |
+| Agente programático | Tool calling, cancelamento, limites e aprovações comprovados no provedor de teste | E2E real, posterior |
+| Gemini Web/Argon agêntico | Gate técnico **e** gate de permissão aprovados | POC e revisão de termos documentadas; atualmente não comprovado |
+| Qualidade de entrega | Build, typecheck, testes, empacotamento e CI válidos | Pipeline + teste manual do host |
+| Compatibilidade | Declarar apenas SO/IDE/versões testados | Matriz de suporte |
 
-### 4.3 Não objetivos (versão inicial)
+### 4.3 Não objetivos e restrições
 
-- Transformar a assinatura Google AI Pro em créditos de API.
-- Ignorar paywalls, níveis de assinatura, limites de uso, desafios antiabuso ou controles de autenticação.
-- Usar endpoints privados, tokens ou cookies extraídos de sessões para imitar a API Gemini.
-- Garantir automação em segundo plano do Gemini Web.
-- Executar comandos arbitrários sem aprovação.
-- Enviar automaticamente todo o workspace para serviços externos.
-- Reproduzir integralmente o design proprietário de outro produto.
+- Converter Google AI Pro em créditos de API, acesso ilimitado ou mudança de nível de assinatura.
+- Usar cookies, tokens, perfis de navegador, endpoints privados, engenharia reversa de sessões ou automação não autorizada.
+- Ignorar CAPTCHA, paywalls, controles antiabuso, CSP ou políticas do serviço.
+- Anunciar agent loop web, streaming, leitura da página ou tool calling sem comprovação.
+- Executar comandos arbitrários ou editar arquivos sem o controle de permissões apropriado.
+- Exfiltrar automaticamente o workspace, armazenar segredos em logs ou coletar telemetria por padrão.
+- Copiar design, marca ou propriedade intelectual de outros agentes.
+- Priorizar indefinidamente uma infraestrutura bloqueada em detrimento da primeira experiência de produto.
 
-## 5. Princípios de projeto e restrições inegociáveis
+## 5. Princípios e responsabilidades
 
-1. **Verdade sobre capacidades.** Separar claramente *Web Assistido*, *API Oficial* e qualquer capacidade experimental futura. Não chamar o modo web de “agente autônomo” sem comprovação funcional.
-2. **Respeito à conta do usuário.** Login só nos fluxos legítimos do Google; não solicitar senha, 2FA, cookie de sessão, bearer token ou exportação de perfil de navegador.
-3. **Acesso permitido.** Sem contornar bloqueios de origem, paywalls, CAPTCHA, proteção anti-bot ou controles de plataforma. Avaliar termos e permissões antes de qualquer automação do site.
-4. **Local-first.** Leitura de arquivos, construção de contexto, parsing e diffs ocorrem localmente; apenas conteúdo explicitamente aprovado pode ser enviado ao provedor.
-5. **Consentimento informado.** O usuário vê os arquivos/trechos que serão compartilhados e autoriza mudanças em disco e ações no terminal.
-6. **Mínimo privilégio.** Respeitar Workspace Trust e diretórios excluídos; negar operações fora do workspace por padrão.
-7. **Adapters isolados.** UI e ferramentas de IDE não dependem de detalhes de DOM, endpoints ou implementação do Gemini Web.
-8. **Degradação elegante.** Se um fluxo web não funcionar, informar e oferecer modo externo/manual, sem invocar rotas não documentadas.
-9. **Open source de verdade.** Licença definida antes do primeiro release; dependências e artefatos auditáveis; changelog e security policy.
-10. **Uso por conta e risco (*at your own risk*).** O Argonauta é fornecido "no estado em que se encontra" (*AS IS*), sem garantias de qualquer natureza. O usuário utiliza a extensão por sua exclusiva conta e risco, assumindo total responsabilidade pelo cumprimento dos Termos de Serviço de provedores terceiros e pelas decisões de compartilhamento e alteração de código.
+1. **Agente como norte:** o produto completo é uma experiência agêntica; o modo manual é uma etapa intermediária explicitamente identificada.
+2. **Verdade sobre capacidades:** cada provedor declara o que realmente suporta; nenhum comportamento é simulado para aparentar autonomia.
+3. **Consentimento granular:** contexto, cópia/envio, escrita, terminal e operações externas sensíveis requerem os controles e aprovações definidos para a respectiva capacidade.
+4. **Segredos protegidos:** não solicitar credenciais, cookies ou tokens de login de terceiros. Chaves de API próprias, quando aplicáveis, ficam em armazenamento seguro do host.
+5. **Segurança técnica sem limites artificiais de desenvolvimento:** o projeto prioriza a solidez técnica, a privacidade e a segurança estrita do software e do ambiente do desenvolvedor, sem impor barreiras de engenharia baseadas em limites contratuais de serviços terceiros. A responsabilidade quanto aos termos e políticas de plataformas externas é do usuário, devidamente orientado e ciente dos riscos.
+6. **Local-first:** contexto, filtros, parsing e diffs ocorrem localmente; nada sai do workspace automaticamente.
+7. **Mínimo privilégio:** Workspace Trust, validação de caminhos, symlinks, exclusões, timeouts, limites e falha fechada.
+8. **Independência de provedor:** UI, sessão, ferramentas e orquestrador não importam interfaces privadas do Gemini Web.
+9. **Degradação honesta:** falhas de um provedor não são mascaradas por outro modo sem informar e obter concordância.
+10. **Engenharia reproduzível:** TypeScript estrito, workspaces, testes, CI, ADRs, evidências e segurança são parte do produto.
+11. **Desenvolvimento Antigravity-first:** todas as capacidades do host devem ser exercitadas e validadas no Antigravity real antes de divulgação.
+12. **Governança:** agente implementador não faz commit, push, merge, instalações sensíveis ou alterações no Registro sem autorização expressa do mantenedor.
 
-### 5.1 Isenção de responsabilidade e termos do usuário (Disclaimer)
+### 5.1 Isenção de responsabilidade e ciência de riscos (AS IS)
 
-O Argonauta é um projeto independente de código aberto. A sua utilização submete-se estritamente aos seguintes termos:
+O Argonauta é software independente e open source, fornecido **no estado em que se encontra (AS IS)**, sem promessa de disponibilidade contínua, adequação a um propósito ou ausência de falhas.
 
-- **Responsabilidade perante terceiros:** O usuário é o único e exclusivo responsável por ler, compreender e cumprir integralmente os Termos de Serviço, Políticas de Uso Aceitável e restrições de automação ou uso de API de quaisquer serviços de terceiros acessados (incluindo, sem limitação, Google, Microsoft, Anthropic ou OpenAI).
-- **Inexistência de garantias contra sanções:** O Argonauta, seus mantenedores e colaboradores não garantem que qualquer método de interação ou automação esteja isento de detecção, bloqueio de requisições, restrições temporárias ou suspensão/banimento de contas por parte de provedores terceiros. O usuário assume expressamente todo e qualquer risco relativo à sua conta ou assinatura.
-- **Fornecimento "no estado em que se encontra" (*AS IS*):** O software é disponibilizado sem garantias expressas ou implícitas de comercialização, adequação a um propósito específico, disponibilidade contínua ou ausência de erros.
-- **Responsabilidade sobre dados e código-fonte:** Cabe exclusivamente ao usuário revisar todo e qualquer trecho de código ou metadado antes de autorizar o envio a interfaces externas, bem como inspecionar minuciosamente diffs e patches gerados por IA antes de sua aplicação ao workspace. Os mantenedores não respondem por vazamentos de segredos, perdas de dados, regressões no código ou danos diretos/indiretos decorrentes do uso da ferramenta.
+**Princípio de não limitação no desenvolvimento e ciência do usuário:** O projeto Argonauta não impõe travas de engenharia ou limites artificiais no desenvolvimento fundamentados em restrições contratuais de serviços terceiros. Toda a proteção de segurança concentra-se na integridade do ambiente do usuário, no controle de arquivos locais e na prevenção de vazamentos. O usuário deve estar ciente de que o uso perante provedores externos é realizado por sua exclusiva conta e risco (*at your own risk*), assumindo integralmente a responsabilidade pelo cumprimento de termos e eventuais consequências em suas contas ou assinaturas.
 
-## 6. Hipóteses, certezas e riscos abertos
+O usuário deve conhecer e cumprir os termos de serviços terceiros que utilizar, inclusive condições de acesso, automação, APIs, contas e assinaturas. Os mantenedores não garantem que operações perante terceiros estejam imunes a restrições, bloqueios ou sanções. O usuário é responsável por revisar o conteúdo compartilhado, as alterações propostas e as ações que autorizar. O produto deve apresentar avisos e termos claros de ciência de riscos, inclusive no primeiro uso.
 
-| ID | Hipótese/pergunta | Estado em 14/10/2026 | Como decidir |
+## 6. Hipóteses, evidências e estados atuais
+
+A identificação e a semântica de **H-01 a H-09** são preservadas do PRD anterior. Novos itens H-10 a H-15 registram evidências que surgiram depois, sem renumerar hipóteses existentes.
+
+| Hipótese / gate | Estado em 14/10/2026 | Evidência / próxima decisão |
+|---|---|---|
+| **H-01** — Conta Google AI Pro vê Argon no Gemini Web | **Observado** pelo mantenedor | Capturas e relato; não generalizar para outras contas |
+| **H-02** — VS Code dispõe de navegador integrado | Documentado para VS Code; não significa suporte no Antigravity | Portabilidade futura; não é requisito de desenvolvimento |
+| **H-03** — Gemini Web aceita login no navegador integrado Antigravity | **Não validado** | Jetski apresentou página em branco; não assumir a causa |
+| **H-04** — Argon está disponível após login no navegador integrado | **Não validado** | POC-03 no ambiente efetivo; não equiparar seletor externo ao integrado |
+| **H-05** — Antigravity contém navegador equivalente ao do VS Code | **Não comprovado como equivalência** | Jetski observado; compatibilidade e comportamento próprios |
+| **H-06** — Extensões podem controlar/observar aba de terceiros por mecanismo suportado e autorizado | **Não comprovado** | POC-05 + análise de APIs e termos |
+| **H-07** — Agente autônomo sobre Gemini Web por integração permitida | **Alto risco / não comprovado** | Exige G3-T, G3-W e G4; sem bypass |
+| **H-08** — Gemini API pode sustentar modo agente próprio | **Viável em princípio, condicional** | POC-07, acesso e faturamento próprios; não atribuir à assinatura Pro |
+| **H-09** — Open VSX e VS Marketplace aceitarão a extensão | **Não garantido** | Licença, políticas, distribuição e homologação de host |
+| **H-10** — Antigravity suporta APIs públicas básicas para uma extensão | **Aprovado para o probe**, não para o produto completo | Etapa 0: 9/9 verificações manuais |
+| **H-11** — Chrome Native Messaging básico funciona | **Aprovado na POC-05A** | PING/PONG no Chrome real, sem integração Gemini |
+| **H-12** — Contratos e framing da ponte são robustos | **Aprovados na Etapa 1** | Testes/fixtures; não validam transporte seguro |
+| **H-13** — Transporte por `node:net` atende ao gate IPC | **Reprovado / `blocked`** | DACL com `Everyone`/`Anonymous` e acesso por `\\localhost\pipe`; ADR-0002 |
+| **H-14** — Helper Win32 pode atender ao gate | **`proposed` e `blocked` para execução** | ADR-0003; toolchain ausente; nenhum helper compilado |
+| **H-15** — Navegador externo atende ao handoff completo do MVP | **`pending_validation` para o fluxo M1** | Conversa manual e retorno ao diff devem ser comprovados; PONG do Chrome não é prova |
+
+**Interpretação:** prova de infraestrutura não é prova de acesso web. Falha de IPC não invalida o MVP. O núcleo agêntico pode evoluir por interfaces próprias mesmo que a hipótese Gemini Web seja inviabilizada.
+
+## 7. Experimentos e validação da hipótese central
+
+Os identificadores existentes são preservados. Históricos completos e provas ficam no roadmap e nos relatórios correspondentes.
+
+- **POC-01 — Compatibilidade/host:** inventário do Antigravity e navegador integrado; recursos testados, não presumidos.
+- **POC-02 — Gemini Web no Jetski:** comportamento de página em branco observado, sem diagnóstico definitivo; sem bypass.
+- **POC-03 — Disponibilidade do Argon:** observar o modelo e uma conversa pela interface autorizada, com data, versão e relato sanitizado; não extrapolar observação do seletor para backend de agente.
+- **POC-04 — VS Code:** portabilidade futura/voluntária, não requisito para desenvolvimento no Antigravity.
+- **POC-05/05A/05B — Fronteira IDE ↔ Chrome:** investigar e validar Native Messaging, protocolo, segurança de transporte, autenticação e E2E separadamente. POC-05A e Etapas 0/1 da 05B passaram; Etapa 2 permanece bloqueada.
+- **POC-06 — MVP Web Assistido:** contexto aprovado → prompt revisado → uso normal do navegador → importação explícita de resposta → diff → autorização de aplicação.
+- **POC-07 — Provedor via API oficial:** teste de streaming, erros, cancelamento, custos, tool calling e proteção de credenciais, quando aplicável.
+
+### 7.1 Pesquisa G3-W — viabilidade técnica de interação web
+
+Antes de investir em uma ponte final como backend para o Gemini Web, a pesquisa precisa responder:
+
+1. Existe mecanismo ou interface que permita a uma extensão trocar mensagens ou solicitações com a experiência Gemini Web de forma tecnicamente estável?
+2. Esse mecanismo pode ser utilizado com a **assinatura Google AI Pro** e com o modelo observado, sem presumir créditos de API nem privilégios extras?
+3. O usuário é devidamente orientado sobre a mecânica de operação e está ciente dos riscos perante as políticas de uso do serviço externo?
+4. É possível obter respostas e executar ciclos de tarefas por um contrato explícito, sem leitura de sessão, interceptação de credenciais ou vazamento de dados locais?
+5. Quais limites, mudanças de disponibilidade, controles de consentimento e modos de falha impactam confiabilidade e distribuição?
+
+**Saída da pesquisa:** decisão `pass`, `blocked`, `unsupported` ou `rejected` justificada com testes empíricos, estabilidade no ambiente real e validação de segurança local. A engenharia foca na viabilidade técnica e na segurança do software; não se auto-impõem limites no desenvolvimento decorrentes de termos de terceiros, cabendo ao usuário a decisão consciente e a assunção dos riscos associados (*at your own risk*).
+
+### 7.2 Formato de evidência
+
+Cada experimento deve registrar `ID`, objetivo, data, commit, SO, versão do host, pré-condições, passos, resultados esperado/observado, dados sanitizados, limites, responsável pela execução e decisão. Diferenciar sempre relatório do agente, teste manual, verificação independente e CI.
+
+## 8. Gates e dependências
+
+| Gate | O que aprova | Estado atual / restrição |
+|---|---|---|
+| **G0 — Discovery** | Base e hipóteses identificadas | Fundação parcialmente comprovada; discovery contínuo |
+| **G1 — Fluxo Web Utilizável** | Navegador normal e handoff efetivamente utilizáveis | Pode empregar navegador externo; exige prova do fluxo completo |
+| **G2 — MVP Manual Útil** | POC-06, contexto, consentimento, importação e diff | `planned`; não depende de G3 |
+| **G3-T — Ponte técnica** | IPC seguro, autenticação e E2E IDE ↔ host ↔ Chrome | **Bloqueado na POC-05B Etapa 2** |
+| **G3-W — Viabilidade técnica web** | Mecanismo web funcional, tecnicamente viável e estável, com usuário ciente dos riscos | **Não validado** |
+| **G4 — Agente autônomo** | Backend real (API oficial **ou** G3-T + G3-W), ferramentas, permissões, segurança, rollback | Condicional; G3 não é requisito da rota API |
+| **G5 — Publicação** | Testes reais, segurança, licença, governança e requisitos de marketplace | Planejado |
+
+**G3 = G3-T e G3-W para qualquer alegação de Web Bridge Gemini.** Um canal Node.js/Chrome funcional valida o transporte técnico (G3-T); G3-W valida a viabilidade técnica de interação com a interface web. A responsabilidade quanto aos termos e políticas de serviços terceiros é do usuário final devidamente conscientizado. Um backend API oficial pode permitir G4 sem G3, sob condições de credencial e faturamento independentes.
+
+## 9. Requisitos funcionais e prioridades
+
+Prioridades: **P0-M1** = necessário ao Web Assistido; **P1** = evolução do agente; **P2** = condicionado a gates específicos. A prioridade define a entrega, **não** a importância da visão final.
+
+| ID | Requisito | Prioridade | Aceite essencial |
 |---|---|---|---|
-| H-01 | Conta Pro vê Argon no Gemini Web | **Observado** nas capturas do idealizador; não generalizar a todos os usuários | Repetir na conta de teste |
-| H-02 | VS Code dispõe de navegador integrado | **Documentado para VS Code; não inferir suporte no Antigravity** | Pesquisa/documentação; teste de compatibilidade posterior |
-| H-03 | Gemini Web aceita login no navegador integrado **do Antigravity**, se houver | **Não validado** | POC-02 |
-| H-04 | Argon está disponível após login no navegador integrado | **Não validado** | POC-03 |
-| H-05 | Antigravity IDE contém navegador integrado equivalente ao do VS Code | **Não validado; hipótese prioritária** | POC-01 e POC-02 |
-| H-06 | Extensões podem controlar/observar a aba web de maneira **suportada e autorizada** | **Não comprovado** | POC-05 + análise de APIs/termos |
-| H-07 | É possível construir um agente autônomo sobre Gemini Web com integração permitida | **Alto risco / não comprovado** | Gate G3; não prometer antecipadamente |
-| H-08 | Gemini API pode sustentar modo agente próprio | **Viável em princípio com acesso e faturamento separados** | POC-07 e disponibilidade do modelo na API |
-| H-09 | Open VSX e Visual Studio Marketplace aceitarão a extensão | **Não garantido** | Revisão de políticas + homologação |
+| **FR-01** | `Argonauta: Open` e view própria | P0-M1 | Painel abre/restaura no Antigravity real |
+| **FR-02** | Abrir Gemini Web no navegador compatível | P0-M1 | Fluxo normal com fallback externo e limitações visíveis |
+| **FR-03** | `Argonauta: Ask About Selection` | P0-M1 | Prompt usa somente seleção e metadados aprovados |
+| **FR-04** | Seletor de contexto: seleção, arquivo e arquivos escolhidos | P0-M1 | Prévia por item e exclusão de trechos |
+| **FR-05** | Copiar prompt com consentimento | P0-M1 | Clipboard recebe somente conteúdo aprovado |
+| **FR-06** | Importar resposta/patch explicitamente | P0-M1 | Conteúdo inválido não grava arquivo |
+| **FR-07** | Diferenças e aplicação/rejeição | P0-M1 | Escrita somente após aprovação, respeitando escopo |
+| **FR-08** | Chat/atividade local e histórico | P0-M1 | Sessões diferenciadas do chat remoto e limpeza possível |
+| **FR-08b** | Aviso de ciência e responsabilidade na primeira execução | P0-M1 | Exibir limites e obter confirmação antes de integrações externas |
+| **FR-09** | Identificar modo e capacidade do provedor | P0-M1 | Sem confundir manual, indisponível e agente ativo |
+| **FR-10** | Cancelamento, erros e logs sanitizados | P0-M1 | Sem exposição de segredos e com limpeza |
+| **FR-11** | Temas, teclado, acessibilidade | P0-M1 | Navegação e contraste adequados |
+| **FR-12** | Provedor de API oficial BYOK | P1 / condicional | Credencial segura, custo, streaming e falhas comprovados |
+| **FR-13** | Planejamento e execução estruturada de ferramentas | P1 / G4 | Ferramentas listadas, escopos e aprovações verificados |
+| **FR-14** | Terminal/testes autorizados | P1 / G4 | Exibir comando, diretório e efeitos antes de executar |
+| **FR-15** | Revisão multi-arquivos, checkpoints, rollback | P1 / G4 | Alterações rastreáveis e reversão com limites explícitos |
+| **FR-16** | Indexação/descoberta seletiva de contexto | P1 | Ignorar segredos, `.gitignore` e caminhos proibidos |
+| **FR-17** | Ponte web bidirecional | P2 / G3-T+G3-W | Mecanismo técnico estável, testes E2E e usuário ciente dos riscos |
+| **FR-18** | Agent loop sobre interface web | P2 / G3+G4 | Tool calling realmente disponível e autorizado |
+| **FR-19** | Provedores adicionais intercambiáveis | P2 | Capabilities e UX desacopladas de cada backend |
+| **FR-20** | **Ícone próprio e Activity Bar View Container** | P0-M1 | Ícone Argonauta visível, view aberta por clique e identificada |
+| **FR-21** | **Área de tarefas, plano e atividade** | P0: estrutura; P1: execução | No MVP mostra etapas manuais; em G4 mostra ações reais, progresso e falhas |
+| **FR-22** | **Modos Perguntar, Planejar e Agir** | P0: indicação; P1: funcional | `Agir` indisponível enquanto não houver backend e permissões comprovados |
+| **FR-23** | **Indicadores de provedor/modelo e estado real** | P0: rótulos; P1/P2: integração | Não afirmar Gemini 4 Argon conectado sem teste e identificação confiável |
+| **FR-24** | **Registro local de aprovações e operações** | P1 / G4 | Auditoria sanitizada de ação proposta, resultado e autorização |
+| **FR-25** | **Isolamento das sessões e interrupção de tarefas** | P1 / G4 | Cancelar, fechar recursos, não repetir ações sem autorização |
 
-> **Importante:** o recurso do VS Code que permite compartilhar páginas com agentes nativos não prova que extensões independentes recebam a mesma interface programática. Essa diferença é objeto de investigação, não premissa arquitetural.
+**Não criar novos identificadores para renomear os requisitos existentes.** FR-20 a FR-25 complementam FR-01 a FR-19. A numeração dos marcos M0–M5, trilhas T01–T09, gates G0–G5 e etapas POC-05B 0–6 permanece estável.
 
-## 7. Experimentos de descoberta (antes da implementação extensa)
+### 9.1 Experiência visual esperada
 
-> **Ordem obrigatória do projeto:** POC-01 → POC-02 → POC-03 → POC-05/06, **sempre no Antigravity IDE**. A POC-04 (VS Code) é uma trilha posterior de portabilidade e não bloqueia desenvolvimento, testes ou publicação inicial no Open VSX.
+- **Barra lateral:** ícone proprietário do Argonauta na Activity Bar do Antigravity e contêiner de views registrado pela API pública, quando suportada; painel persistente ao clicar no ícone.
+- **Cabeçalho:** modo (Web Assistido, API Oficial, Web Bridge), estado do provedor/modelo, configurações, indicação de indisponibilidade e limitações.
+- **Conversa:** mensagens, campo de prompt, anexos de contexto selecionados, histórico e ações de cancelar/repetir quando realmente implementadas.
+- **Contexto:** inventário de arquivos, trechos e tamanho, filtros, exclusões, visualização e consentimento por operação.
+- **Plano e atividade:** tarefas, etapas, ferramentas propostas, autorizações, resultado de testes e erros; estados simulados ou placeholders não podem aparentar execução real.
+- **Revisão:** diff por arquivo, seleção de alterações, confirmação de aplicação e informações de reversão.
+- **Configurações:** provedor, capacidades, exclusões, limites de contexto, histórico e privacidade.
+- **Primeiro uso:** aviso de caráter experimental, responsabilidades, consentimento e informações de fornecedor externo.
 
-Os experimentos abaixo são **sequenciais e com registro de evidências**. Executar apenas em contas e ambientes próprios/autorizados.
+A UI deve inspirar-se na **categoria funcional** de agentes populares, mas construir identidade visual e componentes próprios. Não adicionar promessas cosméticas de autonomia antes de conectar um backend legítimo.
 
-### POC-01 — Inventário e versão dos hosts
+### 9.2 Fluxos de uso
 
-**Procedimento:** registrar **Antigravity IDE** instalado, versão, SO, disponibilidade da paleta de comandos, navegador integrado e versão do mecanismo de extensões. Não exigir instalação de VS Code. Registrar outros hosts apenas se forem testados depois.
+**Fluxo A — Web Assistido (M1):** abrir Argonauta → selecionar contexto → revisar e aprovar prompt → copiar e abrir navegador compatível → usuário interage manualmente com Gemini Web → importar resposta → revisar diff → aplicar/rejeitar explicitamente.
 
-**Saída:** `docs/validation/compatibility-matrix.md` com host, versão, SO, data e resultado.
+**Fluxo B — Agente via API oficial (M3, G4):** abrir painel → configurar chave oficial com custos claros → perguntar/planejar → aprovar ferramentas e escopos → orquestrador executa e apresenta eventos → revisar diffs/checkpoints → concluir/cancelar.
 
-**Aceitação:** matriz preenchida; recursos não existentes marcados como `unsupported`, nunca assumidos.
+**Fluxo C — Agente conectado ao Gemini Web (M4, estritamente condicional):** somente definir contratos operacionais e ações de ferramenta depois de comprovar G3-T, G3-W e G4; não tratar login normal na página como integração programática.
 
-### POC-02 — Gemini Web no navegador integrado do Antigravity IDE
+## 10. Arquitetura de produto e componentes
 
-**Procedimento:** **no Antigravity IDE**, verificar primeiro se existe um comando equivalente a **Browser: Open Integrated Browser**. Se disponível, abrir manualmente `https://gemini.google.com/app`, navegar e realizar login pela interface oficial. Se o comando estiver ausente ou falhar, marcar como `unsupported` ou `fail`, testar o navegador externo e registrar o limite; **não presumir** que o Antigravity implementa o recurso do VS Code.
+### 10.1 Plataforma, dependências e estrutura
 
-**Não fazer:** injetar scripts de login, acessar cookie jar, enfraquecer políticas de segurança ou desativar proteções.
+- **Host principal:** Antigravity IDE Windows, Extension Host local Node.js, API pública compatível com VS Code quando comprovada; `extensionKind: ["ui"]` para cenário local, sujeito a homologação.
+- **UI:** `WebviewView` no Activity Bar ou alternativa pública suportada, com CSP restritiva, mensagens tipadas e assets locais; não incorporar Gemini Web dentro da Webview do Argonauta.
+- **Linguagem:** TypeScript `strict`; npm workspaces nativos, sem toolchains orquestradoras extras sem justificativa.
+- **Bibliotecas:** protocolos, contexto, segurança, sessões e revisões desacoplados do host e do provedor onde aplicável.
+- **Aplicações:** `apps/ide-extension` quando houver código real; `apps/chrome-extension` e `apps/native-host` somente quando autorizados e implementados. Ferramentas de validação permanecem em `tools/`.
+- **Baseline:** `packages/protocol`, `tools/compatibility-probe`, `tools/native-messaging-smoke`, `tests/integration` e CI Windows existentes. Não retornar à estrutura `experiments/`.
+- **Portabilidade:** compatibilidade com VS Code, Linux e macOS permanece alvo futuro, sujeita a testes específicos.
 
-**Aceitação:** página utilizável **no Antigravity IDE**, sem interceptação de credenciais; registrar ausências e falhas como resultados legítimos, não como motivo para contornar proteções.
-
-### POC-03 — Disponibilidade e interação com Argon
-
-**Procedimento:** verificar seletor de modelos e possibilidade de conversa, em modo mínimo/médio/máximo se disponível, apenas por interação normal. Comparar com navegador externo na mesma conta.
-
-**Aceitação:** pelo menos uma conversa bem-sucedida com o Argon **dentro** do navegador integrado; guardar evidências anonimizadas. Se não funcionar, registrar o bloqueio e interromper hipóteses dependentes.
-
-### POC-04 — Compatibilidade com VS Code (posterior e opcional)
-
-**Procedimento:** **após a validação no Antigravity IDE**, verificar em VS Code se o mesmo VSIX abre o navegador integrado, apresenta a interface e suporta os comandos da extensão. Essa validação pode ser executada por colaboradores; **não requer que o mantenedor programe no VS Code**.
-
-**Aceitação:** resultado explícito `pass/fail/unsupported` com versão e reprodução. A ausência do VS Code **não bloqueia** o MVP direcionado ao Antigravity.
-
-### POC-05 — Fronteira extensão ↔ navegador
-
-**Perguntas de teste:**
-
-- Existe uma **API pública e documentada** para a extensão abrir/focar uma URL no navegador integrado?
-- Existe mecanismo público e autorizado para a extensão obter conteúdo ou intercambiar mensagens com a aba de terceiros?
-- Há separação clara entre ferramentas de **agentes nativos do VS Code** e APIs acessíveis às extensões?
-- Os termos do Google permitem o fluxo de integração pretendido?
-
-**Aceitação:** decisão documentada com link para API e testes **no Antigravity IDE**; **não** considerar `executeCommand` interno/não documentado como contrato estável de produção.
-
-**Bloqueio:** se não houver canal permitido para integração bidirecional, **não** implementar automação por sessão/cookies/endpoints privados. Prosseguir somente com modo assistido.
-
-### POC-06 — MVP de transferência manual de contexto/patch
-
-**Procedimento:** selecionar código no editor, gerar prompt com caminho/linguagem/trecho, copiar para a área de transferência após confirmação, usar Gemini Web, trazer resposta/patch para a extensão e mostrar diff.
-
-**Aceitação:** completar o fluxo sem acesso programático à página do Google; nenhuma alteração sem confirmação explícita.
-
-### POC-07 — Provedor com API documentada (em paralelo, opcional)
-
-**Procedimento:** implementar um provedor de teste usando uma API oficial configurada com chave própria e limites/cobrança informados ao usuário; validar streaming, erros, cancelamento e tool-calling quando suportado.
-
-**Aceitação:** contrato de provedor testado independentemente da UI; backend de referência funcionando. **Não supor que Google AI Pro inclua uso da Gemini API.**
-
-### Modelo de relatório de experimento
-
-Cada POC cria um arquivo com: `ID`, `data`, `SO`, `versões`, `pré-condições`, `passos exatos`, `resultado esperado`, `resultado observado`, `evidência sem dados pessoais`, `impacto` e `decisão`.
-
-## 8. Gates: critérios para avançar ou interromper
-
-| Gate | Pré-requisito | Decisão |
-|---|---|---|
-| **G0 — Discovery** | H-01/H-02 registrados e cenários definidos | Iniciar testes |
-| **G1 — Web utilizável** | POC-02 + POC-03 aprovadas **no Antigravity** (ou fallback externo viável) | Construir UX de abertura/navegação para Antigravity primeiro |
-| **G2 — MVP útil sem automação web** | POC-06, diff, consentimento e testes básicos | Lançar beta **Web Assistido** se houver valor claro |
-| **G3 — Integração bidirecional** | Canal técnico permitido, documentado, testável e compatível com termos | Considerar sincronização avançada |
-| **G4 — Agente autônomo** | G3 **ou** API oficial; tool-calling e permissões testados | Lançar funções de agente com nome correto |
-| **G5 — Publicação** | Segurança, compatibilidade, licença, documentação e revisão das lojas | Publicar nas lojas aprovadas |
-
-**Critério de pivot:** se G3 falhar, Argonauta pode continuar como assistente web **manual** + agente via **API oficial**, mas **não** será anunciado como “Argon web autônomo no Antigravity IDE”.
-
-## 9. Escopo funcional por prioridade
-
-Legenda: **P0** = necessário para MVP; **P1** = próxima versão; **P2** = futuro condicionado à validação.
-
-| ID | Requisito | Prioridade | Dependência | Critério de aceitação |
-|---|---|---|---|---|
-| FR-01 | Comando `Argonauta: Open` e view própria | P0 | SDK do host | Painel abre e restaura sem erros |
-| FR-02 | Acesso a Gemini Web por navegador compatível (integrado ou externo) | P0 | G1 para modo integrado | Abre fluxo normal e informa limitações |
-| FR-03 | Comando `Argonauta: Ask About Selection` | P0 | VS Code API | Prompt contém somente seleção e metadados aprovados |
-| FR-04 | Seletor de contexto: seleção, arquivo atual e arquivos escolhidos | P0 | Permissões | Prévia dos conteúdos enviados; nada implícito |
-| FR-05 | Copiar prompt com um clique e instruções de uso | P0 | Clipboard API | Filtros e prévia reduzem risco de envio de segredos; usuário aprova o conteúdo |
-| FR-06 | Importar resposta/patch por colagem explícita | P0 | Parser | Resposta inválida mostra erro; nunca grava arquivo |
-| FR-07 | Preview de diff e aplicar/rejeitar mudanças | P0 | WorkspaceEdit | Só altera arquivos existentes/novos autorizados após confirmação |
-| FR-08 | Chat local com histórico da sessão **sem credenciais** | P0 | Storage local | Histórico pode ser limpo; política de retenção explícita |
-| FR-08b | Termo de ciência e responsabilidade (*First-run Disclaimer*) | P0 | UI / Storage local | Exibir aviso explícito na primeira execução informando o caráter experimental e o uso por conta e risco; exige confirmação do usuário antes de habilitar ações externas |
-| FR-09 | Estados visíveis de provedor (`Web Assisted`, `Official API`, indisponível) | P0 | Interfaces de adapter | UI não confunde modo manual e automático |
-| FR-10 | Cancelamento, feedback de erros e logs redigidos | P0 | Observabilidade | Sem stacktrace bruto ou token nos logs de usuário |
-| FR-11 | Theming claro/escuro, teclado e acessibilidade | P0 | VS Code Webview | Navegável por teclado; contraste adequado |
-| FR-12 | Provider oficial via chave configurada pelo usuário | P1 | POC-07 | Stream, timeout, cancelamento e erros testados |
-| FR-13 | Planejamento e execução estruturada de ferramentas locais | P1 | G4 | Cada ação sensível depende de aprovação |
-| FR-14 | Execução de testes/terminal com autorização | P1 | Workspace Trust + G4 | Comando exato exibido antes de executar |
-| FR-15 | Fluxo de revisão multi-arquivos, checkpoints e rollback | P1 | Orquestrador | Mudanças reversíveis e testes de conflito |
-| FR-16 | Indexação seletiva de workspace e exclusões | P1 | Privacidade | Segue `.gitignore` + regras adicionais |
-| FR-17 | Integração web bidirecional de mensagens | P2 | **G3** | Mecanismo suportado/permitido e confiável demonstrado |
-| FR-18 | Agent loop sobre interface web | P2 | **G3 + G4** | Resultados reproduzíveis, segura contra execução arbitrária |
-| FR-19 | Backends adicionais / BYOK | P2 | Provider SDK | Pluggability sem alterar UX central |
-
-### 9.1 UX e telas esperadas
-
-**Painel Argonauta:**
-
-- Aviso/modal de ciência e responsabilidade (*First-run Disclaimer*) na primeira inicialização, com link para as políticas e registro do aceite.
-- Cabeçalho com **nome do modo ativo** e indicador de disponibilidade.
-- Área de conversa/atividade (mensagens locais; no modo web assistido, **não** alegar que exibe transcrição sincronizada automaticamente).
-- Input de prompt com botões `Add Context`, `Open Gemini`, `Copy Prompt`, `Import Response`.
-- Lista de arquivos/trechos selecionados com remoção individual.
-- Aba/área de **Diff Review** com botões `Apply`, `Reject`, e resumo das alterações.
-- Seção `Settings` com provedor, exclusões, limites de contexto, logs e política de privacidade.
-
-**Progressive disclosure:** fluxos de terminal e execução de ferramentas só aparecem quando o backend suportar essa capacidade e o workspace for confiável.
-
-### 9.2 Fluxos prioritários
-
-**Fluxo A — Perguntar sobre seleção (MVP):**
-
-1. Na primeira execução, usuário visualiza e confirma ciência do termo de responsabilidade e uso por conta e risco.
-2. Usuário seleciona código.
-3. Executa `Argonauta: Ask About Selection`.
-4. Confere a prévia de contexto, remove trechos sensíveis e aprova.
-5. Extensão gera/copia prompt e abre/foca Gemini Web conforme capacidade do host.
-6. Usuário envia a mensagem pela interface web.
-7. Usuário traz a resposta para o Argonauta por colagem/importação.
-8. Se houver patch, visualiza diff e decide aplicar/rejeitar.
-
-**Fluxo B — Agente com API oficial (pós-MVP):**
-
-1. Usuário configura sua própria credencial de provedor suportado.
-2. Extensão executa a solicitação via API documentada.
-3. Modelo propõe chamadas de ferramentas estruturadas.
-4. Orquestrador valida caminho, escopo e permissões.
-5. Usuário aprova ações sensíveis e revisa diffs.
-6. Extensão aplica mudanças e apresenta resultados/testes.
-
-**Fluxo C — Web avançado (somente após G3/G4):** definir depois que um canal suportado estiver comprovado. Não estimar nem anunciar capacidade antes disso.
-
-## 10. Arquitetura técnica proposta
-
-### 10.1 Stack inicial
-
-**Todas as tarefas de programação, depuração e validação do mantenedor ocorrerão dentro do Antigravity IDE.** `@types/vscode` e ferramentas do ecossistema VS Code podem ser usados como bibliotecas/SDKs; isso não implica utilizar o aplicativo VS Code.
-
-- **TypeScript + Node.js** para Extension Host.
-- **API de extensões compatível com VS Code, conforme disponibilizada pelo Antigravity IDE**, para comandos, seleção, arquivos, edições, terminal e storage. Testar cada capacidade no host real.
-- **WebviewView** ou **WebviewPanel** para UI própria com CSP restritiva.
-- **Bundler:** `esbuild` inicialmente, com testes em CI.
-- **Testes:** unitários em Vitest (se compatível com o ambiente escolhido); integração executada **no Antigravity IDE**, com harness adaptado à sua implementação. O harness oficial do VS Code poderá servir de referência, mas não comprova execução no Antigravity.
-- **Versão mínima da API:** definir após inventário dos hosts; **não inventar compatibilidade**.
-- **Sem servidor próprio no MVP.** Nenhuma telemetria por padrão.
-
-### 10.2 Componentes
+### 10.2 Separação de responsabilidades
 
 ```text
-┌──────────────────────────────────────────────────────────┐
-│           Antigravity IDE (host principal)               │
-│  Command Palette · Editor · Workspace · Terminal        │
-└────────────────────────┬─────────────────────────────────┘
-                         │ VS Code API
-┌────────────────────────▼─────────────────────────────────┐
-│ Argonauta Extension Host                                 │
-│  ├─ HostCompatibility                                    │
-│  ├─ ContextCollector + PrivacyFilter                     │
-│  ├─ SessionStore                                         │
-│  ├─ PromptComposer                                       │
-│  ├─ PatchParser + DiffReviewer + WorkspaceEdit           │
-│  ├─ PermissionGate / ToolOrchestrator                     │
-│  └─ ProviderRegistry                                     │
-│       ├─ WebAssistedAdapter (abrir/copiar/importar)       │
-│       ├─ OfficialApiAdapter (posterior)                  │
-│       └─ WebBridgeAdapter (somente se G3 aprovado)       │
-└────────────────────────┬─────────────────────────────────┘
-                         │ mensagens internas validadas
-┌────────────────────────▼─────────────────────────────────┐
-│ Argonauta UI (Webview própria; não é Gemini embutido)    │
-│  Chat/Activity · Context · Provider · Diff · Settings    │
-└──────────────────────────────────────────────────────────┘
-
-Separadamente: Gemini Web em navegador integrado/externo, sujeito
-à autenticação normal, compatibilidade do host e termos aplicáveis.
+Antigravity IDE (editor, workspace, comandos, terminal)
+  └─ Ícone Argonauta / Activity Bar
+      └─ Painel próprio: conversa, contexto, plano, atividade, diffs
+          └─ Núcleo da extensão
+              ├─ Adaptador do host e compatibilidade
+              ├─ Contexto + filtros de privacidade
+              ├─ Sessões + histórico local
+              ├─ Composer de prompts
+              ├─ Parser de patches + revisão de diff
+              ├─ Orquestrador de tarefas e ferramentas
+              ├─ Gate de permissões e registro de decisões
+              └─ Registro de provedores/capacidades
+                  ├─ Web Assistido: copiar/abrir/importar (M1)
+                  ├─ API Oficial: backend programático (M3/G4)
+                  └─ Web Bridge: canal e web permitidos (M4/G3/G4)
 ```
 
-### 10.3 Contrato de provedor (modelo conceitual)
+O núcleo da extensão jamais deve depender de DOM privado do Gemini Web. A escolha de provedor não pode alterar os controles de aprovação de ferramenta. O Web Assistido não implementa falsamente streaming, tool calling ou agent loop.
+
+### 10.3 Capacidades de provedor (contrato conceitual)
 
 ```ts
-interface ProviderCapabilities {
-  openWebPage: boolean;
-  promptHandoff: boolean;
-  responseStreaming: boolean;
-  toolCalling: boolean;
-  fileContext: boolean;
+interface CapacidadesProvedor {
+  abrirPaginaWeb: boolean;
+  transferirPromptManual: boolean;
+  importarRespostaManual: boolean;
+  respostasProgramaticas: boolean;
+  streaming: boolean;
+  chamadasDeFerramenta: boolean;
+  selecionarModelo: boolean;
 }
 
-interface ProviderAdapter {
+interface AdaptadorProvedor {
   readonly id: string;
-  getCapabilities(): ProviderCapabilities;
-  getStatus(): Promise<'ready' | 'needs-setup' | 'unavailable'>;
-  // Métodos adicionais só serão definidos para capacidades reais.
+  obterCapacidades(): CapacidadesProvedor;
+  obterEstado(): Promise<'pronto' | 'configuracao_pendente' | 'indisponivel'>;
 }
 ```
 
-**Regra:** o modo `WebAssistedAdapter` não implementa streaming/tool calling simulados. A UI usa capacidades para habilitar/desabilitar opções, em vez de assumir que todos os provedores são agentes.
+**Este código é descritivo, não contrato implementado.** Métodos adicionais só poderão ser congelados após experimentos com provedores reais. Capacidade declarada `true` exige evidência. Mostrar seleção de modelo não implica que determinado modelo esteja acessível via API.
 
-### 10.4 Estrutura inicial sugerida do repositório
+### 10.4 Segurança da ponte (pesquisa separada)
 
-```text
-argonauta/
-├── README.md                  # inglês; instalação + capacidades/limitações reais
-├── AGENTS.md
-├── package.json
-├── LICENSE                    # escolher antes de publicar
-├── apps/
-│   ├── ide-extension/
-│   ├── chrome-extension/
-│   └── native-host/
-├── packages/
-│   ├── protocol/
-│   └── ipc/
-├── tools/
-│   ├── compatibility-probe/
-│   └── native-messaging-smoke/
-├── tests/
-│   ├── integration/
-│   └── fixtures/
-├── docs/
-│   ├── architecture/
-│   ├── decisions/
-│   ├── product/
-│   └── validation/
-├── scripts/
-│   └── windows/
-└── .github/
-    ├── workflows/
-    └── ISSUE_TEMPLATE/
-```
+A POC-05B pretende conectar IDE ↔ Windows Named Pipe ↔ Native Messaging Host ↔ extensão Chrome MV3. Requisitos específicos: DACL efetiva do usuário/logon autorizado, rejeição remota, primeira instância, identidade, limites de recursos, autenticação mútua HMAC na etapa adequada e testes negativos. **`node:net` como servidor foi reprovado**, e a investigação Win32 da ADR-0003 não produziu helper por ausência de toolchain no ambiente. A POC permanece `blocked`; não criar servidor funcional inseguro nem adotar TCP como fallback silencioso.
 
-**Nota:** pastas podem ser criadas incrementalmente; não construir toda a infraestrutura antes de validar os gates.
+O êxito dessa ponte **não aprova** o uso de Gemini Web como backend. A revisão de G3-W é independente e indispensável.
 
 ## 11. Requisitos não funcionais
 
 ### 11.1 Segurança
 
-- Respeitar `vscode.workspace.isTrusted` e *Restricted Mode*; apenas leitura segura, se suportada, fora de workspaces confiáveis.
-- Validar caminhos relativos/absolutos e symlinks; bloquear escrita fora das raízes aprovadas.
-- Não executar scripts recebidos de respostas ou arquivos do projeto sem confirmação.
-- Proteger contra *prompt injection*: conteúdo dos arquivos é **dado não confiável**, nunca instrução privilegiada para execução.
-- Prévia explícita antes de enviar conteúdo para qualquer IA; excluir `.env`, chaves privadas, arquivos de credenciais e padrões customizados por padrão, com controles documentados.
-- Exigir aprovação para alterações, criação/exclusão de arquivos, comandos de terminal e acessos externos sensíveis.
-- Política de **zero coleta de senhas, cookies de sessão e tokens de login do Google**.
-- Chaves de API fornecidas pelo usuário, quando existirem, guardadas em `SecretStorage`, nunca no `settings.json` nem em logs.
-- CSP estrita em Webviews; mensagens tipadas/validadas; proibir scripts remotos desnecessários.
-- Não abrir portas locais nem serviços de escuta no MVP; se um componente futuro precisar disso, documentar ameaça, autorização, escopo e autenticação.
+- Respeitar `vscode.workspace.isTrusted`, escopo de execução local, autorização por operação e modo restrito.
+- Caminhos e symlinks não podem permitir escrita fora das raízes aprovadas; validar canonicalização, concorrência e conteúdo do patch.
+- Tratar código do projeto, texto importado e saída de modelos como dados não confiáveis; impedir prompt injection sobre permissões.
+- Exigir aprovação de mudanças e ações de terminal/externas, mostrando comando, diretório, arquivos-alvo e efeito possível.
+- Não executar diretamente scripts recebidos de modelos ou documentos sem revisão.
+- Não usar credenciais Google, cookies, 2FA ou tokens de sessão; segredos de API próprios devem usar armazenamento seguro e nunca aparecer em logs.
+- Isolar mensagens de Webview e processos; CSP estrita, validação de schema, limites de memória/tempo e tratamento de backpressure.
+- Evitar portas de rede e serviços residentes no MVP; qualquer transporte futuro requer gate e threat model específicos.
+- Proteger processos auxiliares com identidade, DACL e encerramento determinístico; validações negativas são obrigatórias.
 
 ### 11.2 Privacidade
 
-- Sem telemetria, analytics ou envio para servidor próprio por padrão.
-- Dados do workspace não enviados automaticamente. Mostrar origem e tamanho do contexto.
-- Histórico local opcional, com opção `Clear All Sessions` e retenção documentada.
-- Mensagens enviadas ao Gemini Web/API estão sujeitas às políticas desses serviços, explicadas na documentação.
-- Nenhum código-fonte privado coletado em relatórios de erros ou issues sem consentimento explícito.
+- Sem telemetria nem upload automático do workspace por padrão.
+- Contexto explícito, prévia por arquivo/trecho e exclusão de `.env`, chaves privadas, certificados, tokens e padrões sensíveis.
+- Cumprir `.gitignore` e regras adicionais configuráveis; não presumir que isso, isoladamente, elimina todos os segredos.
+- Histórico local opcional, com limpeza e retenção documentadas; não registrar código privado em diagnósticos públicos sem consentimento.
+- Informar que conteúdo enviado ao Gemini Web ou API fica sujeito às políticas do respectivo serviço.
 
-### 11.3 Performance e confiabilidade
+### 11.3 Confiabilidade, desempenho e UX
 
-- Extensão com inicialização sob demanda, evitando atrasar a abertura da IDE.
-- Operações de leitura e parsing canceláveis, com limites configuráveis de tamanho e contagem de arquivos.
-- UI responsiva durante operações longas.
-- Erros operacionais compreensíveis: `Browser unsupported`, `Login unavailable`, `Provider not configured`, `Invalid patch`, `Workspace not trusted`.
-- Nenhuma escrita parcial silenciosa: agrupar edições quando possível e oferecer recuperação/rollback.
+- Inicialização sob demanda; UI responsiva, carregamento e cancelamento previsíveis.
+- Limites para arquivos, trechos, tamanho do prompt, tarefas, filas e processos.
+- Erros e estados em linguagem compreensível; indisponibilidade de provedor não deve causar perda silenciosa de alterações.
+- Edições transacionais quando possível, identificação de conflitos, checkpoint e plano de recuperação.
+- Acessibilidade: teclado, foco, rótulos, contraste, temas e layout redimensionável.
 
-### 11.4 Acessibilidade e internacionalização
+### 11.4 Idioma e comunicação
 
-- Navegação por teclado, rótulos acessíveis e suporte a alto contraste.
-- Textos de UI em inglês por padrão; externalizar strings para futura tradução PT-BR.
-- Documentação principal em inglês para alcance internacional; guias PT-BR opcionais.
+A ambição histórica do PRD é disponibilizar interface e divulgação internacionalizadas, incluindo inglês e pt-BR. **A política vigente do repositório exige conteúdo gerado em pt-BR**. Até nova decisão explícita do mantenedor sobre a política, novas strings, documentos e mensagens devem respeitar `AGENTS.md` e `.agents/rules/language.md`. Internacionalização é requisito de arquitetura, não licença para descumprir as regras atuais.
 
-## 12. Critérios de aceite do MVP (Definition of Done)
+## 12. Critérios de aceite do M1 — primeiro produto utilizável
 
-- [ ] Extensão inicia **no Antigravity IDE suportado**, sem erros no console.
-- [ ] Host e capacidades detectados sem dependência obrigatória de comandos internos não documentados.
-- [ ] `Argonauta: Open` abre painel próprio.
-- [ ] `Argonauta: Ask About Selection` mostra seleção e metadados antes de compartilhar.
-- [ ] Usuário pode excluir trechos/arquivos do prompt e copiar somente conteúdo aprovado.
-- [ ] O Gemini abre em navegador suportado (integrado ou externo) sem manipular credenciais.
-- [ ] Usuário pode colar/importar uma resposta e revisar um patch.
-- [ ] Não há aplicação de edições sem aceite específico.
-- [ ] Tentativas de escrita fora do workspace são recusadas.
-- [ ] Arquivos sensíveis são excluídos por padrão e documentados.
-- [ ] Comportamento em workspace não confiável é seguro e explícito.
-- [ ] Modo `Web Assisted` identificado na UI, README e descrição da loja.
-- [ ] Termo de uso por conta e risco (*First-run Disclaimer*) implementado na primeira execução, exigindo confirmação explícita antes de liberar integrações externas.
-- [ ] Avisos de isenção de responsabilidade (*disclaimer*) destacados no `README.md`, `SECURITY.md` e na documentação de lançamento.
-- [ ] Testes unitários, lint, empacotamento VSIX e checagens de segurança aprovados.
-- [ ] `README`, `SECURITY`, licença, matriz de suporte e changelog revisados.
-- [ ] Validação manual documentada **no Antigravity IDE**. VS Code só entra na lista de suporte **quando efetivamente testado**; não é requisito do MVP.
+- [ ] Extensão instala/abre no Antigravity IDE real, sem depender do aplicativo VS Code.
+- [ ] Ícone Argonauta aparece na **Activity Bar**, abre o painel dedicado e mantém estado adequado ao recarregar.
+- [ ] `Argonauta: Open` funciona; `Argonauta: Ask About Selection` usa APIs públicas e apresenta prévia.
+- [ ] Painel identifica corretamente Web Assistido, API Oficial e Web Bridge, bloqueando modos indisponíveis.
+- [ ] Contexto selecionado é filtrado, inspecionável e editável/removível antes de copiar/transferir.
+- [ ] Gemini Web abre em navegador legítimo compatível; falha do integrado tem fallback externo e descrição honesta.
+- [ ] Usuário importa resposta explicitamente, visualiza diff por arquivo e aprova/rejeita alterações.
+- [ ] Nenhuma escrita prévia à autorização; negação de escapes do workspace e de arquivos sensíveis.
+- [ ] Workspace não confiável e falhas/cancelamentos são tratados com segurança.
+- [ ] Histórico local, sessão, privacidade e limpeza funcionam; nenhuma resposta manual é apresentada como sincronização automática.
+- [ ] Termo inicial de ciência e responsabilidade informa experimentalidade e políticas de terceiros antes de acesso externo.
+- [ ] Testes unitários, integração, compilação, typecheck, empacotamento VSIX, regressões e validação manual documentada passam.
+- [ ] README, SECURITY, licença, matriz de compatibilidade e comunicação de capacidades estão consistentes com o produto testado.
 
-**MVP não exige automação do Gemini Web.** Ela é objetivo de pesquisa de alto risco, não critério de aceite do primeiro release.
+**M1 não exige agent loop nem integração Gemini Web bidirecional.** Concluí-lo significa entregar um primeiro produto útil, não declarar cumprida a visão agêntica ou o objetivo específico da assinatura Pro.
 
-## 13. Testes e estratégia de qualidade
+### 12.1 Critérios futuros de aceite de um agente real (G4)
 
-### 13.1 Testes automatizados
+- [ ] Backend programático legítimo com status, identidade de provedor e capacidades verificáveis.
+- [ ] Respostas do modelo e chamadas de ferramenta reais, com autenticação e tratamento de erros.
+- [ ] Plano, execução de etapas, cancelamento, limites e histórico de atividade.
+- [ ] Contexto de projeto controlado, decisões explícitas de autorização e proteção contra prompt injection.
+- [ ] Alterações de múltiplos arquivos com revisão, diffs, testes, checkpoints e recuperação.
+- [ ] Testes de segurança, E2E em Antigravity e documentação de limitações.
+- [ ] Para anunciar **Gemini Web/Argon agêntico com assinatura Pro**, aprovação adicional e independente de **G3-T e G3-W**, mais evidência do modelo e da conta autorizados.
 
-- Unitários: `PromptComposer`, filtro de segredos, normalização de caminhos, parser de patches, política de permissões, contratos de provider.
-- Integração: seleção do editor → contexto → prompt; patch → `WorkspaceEdit` → comparação de conteúdo.
-- Segurança: tentativa de path traversal (`../`), symlink fora da pasta, instruções maliciosas em arquivo, comando sem confirmação, vazamento acidental em log.
-- Regressão: troca de provedor, cancelamento, recuperação após reiniciar e conteúdo Unicode/PT-BR.
+## 13. Estratégia de testes
+
+### 13.1 Automatizados
+
+- Componentes: seletor de contexto, filtro de segredos, prompt, sessões, parser de patch, permissões e capacidades de provedor.
+- Integração: editor → contexto → prompt; importação → diff → edição autorizada.
+- Segurança: traversal, symlinks, conflitos, comandos não autorizados, payload inválido, prompt injection, vazamento de segredo e Workspace Trust.
+- Robustez: cancelamento, Unicode, erros de provedor, backpressure, reinício do host e recuperação de sessão.
+- POC-05B: framing e fixtures preservados; testes negativos de DACL/acesso remoto não podem ser substituídos por testes de protocolo.
 
 ### 13.2 Matriz manual
 
-| Ambiente | POC navegador/login | MVP funcional | Publicação |
-|---|---|---|---|
-| **Antigravity IDE / Windows** | **Obrigatório / primeiro** | **Obrigatório / primeiro** | **Open VSX após validação** |
-| Antigravity IDE / Linux ou macOS | Desejável | Beta, se testado | Posterior |
-| VS Code Stable / Windows | Opcional durante MVP | Somente após homologação | Visual Studio Marketplace depois |
-| VS Code Stable / Linux ou macOS | Posterior | Não presumir | Futuro |
-| Outras IDEs compatíveis | Sob demanda | Não presumir | Futuro |
-
-### 13.3 Checklist de evidência
-
-- Cada teste inclui data, versão da IDE, sistema, versão da extensão, reproduções e resultado.
-- Capturas ocultam e-mails, fotos de perfil, IDs, credenciais e projetos privados.
-- Falhas e limitações são publicadas no README, sem omissões na apresentação pública.
-
-## 14. Backlog e marcos
-
-### M0 — Foundation / Discovery (primeiro)
-
-- [ ] Confirmar disponibilidade de nome e namespace.
-- [ ] Criar repositório Git e branch principal.
-- [x] Manter este documento como `PRD.md` na raiz do projeto.
-- [ ] Definir licença e regras de contribuição.
-- [ ] Executar POC-01 a POC-05 com relatório reproduzível.
-- [ ] Decidir G1 e G3 **antes** de qualquer promessa sobre automação web.
-
-**Entrega:** relatório de viabilidade e escopo de implementação atualizado.
-
-### M1 — Web Assisted Prototype
-
-- [ ] Gerar extensão TypeScript mínima.
-- [ ] Implementar comandos, painel e fallback de navegador.
-- [ ] ContextCollector/PromptComposer com consentimento.
-- [ ] Copiar prompt, importar resposta e preview de diff.
-- [ ] Testes unitários e integração básicos.
-
-**Entrega:** VSIX local utilizável e demonstração gravada de fluxo real.
-
-### M2 — Beta open source
-
-- [ ] UI refinada, acessível e com suporte a tema.
-- [ ] Guardrails e revisão de segurança.
-- [ ] Docs, issues, changelog, CI, screenshots e vídeo.
-- [ ] Testes reais **no Antigravity IDE**; VS Code quando houver disponibilidade e for pertinente à expansão.
-- [ ] Release GitHub pré-lançamento.
-
-**Entrega:** beta público, claramente descrito como **Web Assisted**.
-
-### M3 — Official API Agent (trilha paralela/opcional)
-
-- [ ] Implementar provedor programático com chave própria e cobrança explicada.
-- [ ] Streaming e tool-calling conforme documentação do provedor.
-- [ ] Aprovações de terminal, arquivos e rede.
-- [ ] Testes de prompt injection e checkpoints.
-
-**Entrega:** modo agente com backend oficialmente suportado.
-
-### M4 — Web Bridge (estritamente condicionado)
-
-- [ ] Aprovar G3 técnica e contratualmente.
-- [ ] Especificar interfaces públicas e mecanismo de consentimento.
-- [ ] Implementar integração bidirecional sem extração de sessões/endpoints privados.
-- [ ] Homologar confiabilidade e falhas de login/layout.
-
-**Entrega:** somente se viável; caso contrário, encerrar esta trilha e documentar a decisão.
-
-### M5 — Publicação e comunidade
-
-- [ ] Definir publisher e garantir titularidade do namespace.
-- [ ] Revisar nome/ícones/descritivos para evitar confusão de marca.
-- [ ] Empacotar **um VSIX reprodutível**.
-- [ ] Publicar no **Open VSX**, após requisitos e testes do host compatível.
-- [ ] Publicar separadamente no **Visual Studio Marketplace**, **somente depois** de validar suporte real a VS Code; não condicionar o lançamento no Open VSX a essa etapa.
-- [ ] README e release notes em inglês com tabela de capacidades reais.
-- [ ] Divulgar demo no GitHub/X/Reddit/Hacker News respeitando as regras das comunidades.
-
-**Nota:** publicação em uma loja **não** implica publicação automática na outra; cada registro exige preparação própria.
-
-## 15. Critérios para lançamento público e comunicação
-
-### Mensagens permitidas se comprovadas
-
-- “Argonauta helps you bring selected code context to Gemini Web from Antigravity IDE.”
-- “Review and apply generated patches from your IDE.”
-- “Works with the Gemini Web session you access in your own browser” (somente após validar o fluxo específico).
-
-### Mensagens que exigem evidência adicional
-
-- “Full autonomous Gemini 4 Argon agent with Google AI Pro.”
-- “No API needed for automated tool calling.”
-- “Works in every VS Code-compatible IDE.”
-- “Unlimited Argon access.”
-
-Essas promessas **não devem ser usadas** sem documentação técnica reproduzível, confirmação de acesso e avaliação de conformidade.
-
-### Estratégia de divulgação
-
-1. **Prova antes de anúncio:** vídeo curto e sem cortes, com a IDE, contexto selecionado, acesso real ao provedor e aplicação revisada de patch.
-2. **Post técnico:** explicar diferenças entre Gemini Web, IDE e API — sem vender um bypass.
-3. **Código e benchmarks reprodutíveis:** GitHub público, testes automatizados, changelog e limitações explícitas.
-4. **Feedback estruturado:** GitHub Discussions e issues com templates de versão do host/SO/resultado.
-5. **Contribuições externas:** documentação em inglês, `good first issue`, política de vulnerabilidades e roadmap público.
-
-## 16. Riscos e mitigação
-
-| Risco | Probabilidade / impacto (estimativa) | Mitigação |
+| Ambiente | Validação do MVP | Comunicação de suporte |
 |---|---|---|
-| Login Google bloqueado no navegador integrado | Médio / Alto | Testar primeiro; fallback externo |
-| API de navegador só disponível a agentes nativos | Alto / Alto | Verificar APIs públicas; não depender de comandos internos |
-| Restrições contratuais à automação do Gemini Web | Incerta / Crítico | Revisão antes de G3; não contornar restrições; trilha manual/API oficial |
-| Modelo Argon removido ou liberado a Pro na IDE | Alto dinamismo / Médio | Proposta de valor não depender de um modelo/episódio |
-| Exposição de código ou segredos | Médio / Crítico | Consentimento, exclusões, filtros, testes e política de privacidade |
-| Prompt injection / comando malicioso | Médio / Crítico | Separação dados-instruções e aprovação explícita |
-| Rejeição por uso de marca ou marketplace | Médio / Alto | Branding independente e revisão de termos |
-| Fragmentação entre VS Code e Antigravity | Médio / Alto | Compatibility layer e testes por host |
-| Promessas maiores que o MVP | Alto / Alto | Mensagem precisa e roadmap público |
-| Dependência de interface web que muda | Alto / Alto | Evitar DOM scraping; adapters e fallback |
-| Sanções ou suspensão de conta de terceiros por uso indevido ou automação não tolerada | Baixo no modo assistido manual / Médio se houver automação | Uso estritamente por conta e risco do usuário; disclaimer obrigatório na UI/docs; recusa de scrapers/bypass no MVP |
+| Antigravity IDE / Windows | **Obrigatória, primeiro** | Suporte inicial somente se testado |
+| Antigravity / Linux/macOS | Posterior, se ambiente disponível | Não presumir |
+| VS Code / Windows | Posterior ou por colaboradores | Não anunciar sem evidência |
+| VS Code / Linux/macOS | Posterior | Não anunciar sem evidência |
+| Outros hosts | Sob demanda | Não anunciar sem evidência |
 
-## 17. Decisões abertas (ADR backlog)
+Todas as evidências incluem data, commit, versão IDE/SO e método. Capturas ocultam e-mails, identificadores, credenciais, projetos privados e demais informações sensíveis. CI valida o que é executável no pipeline, não interações manuais do Chrome ou Antigravity.
 
-| ID | Decisão | Proposta atual | Momento |
-|---|---|---|---|
-| ADR-001 | Licença | MIT ou Apache-2.0, a decidir | Antes do commit público inicial |
-| ADR-002 | Publisher ID | A definir pelo mantenedor | Antes da publicação |
-| ADR-003 | Versão/API mínima do host Antigravity IDE | Definir pela matriz de compatibilidade | Após POC-01 |
-| ADR-004 | Tecnologia de UI | Webview simples primeiro, framework se necessário | Após POC-05 |
-| ADR-005 | Navegador integrado versus externo | Seleção de modo baseada em recursos verificados | Após POC-02/04 |
-| ADR-006 | Política de importação de patch | Unified diff, com parser restritivo e preview | Durante M1 |
-| ADR-007 | Armazenamento de histórico | Local e opcional, exclusão simples | Durante M1 |
-| ADR-008 | Backends oficiais | Priorizar uso com chave própria e custos transparentes | Durante M3 |
-| ADR-009 | Web Bridge | Não implementar antes de G3 | Após testes e revisão de termos |
+## 14. Marcos e trilhas — referência ao ROADMAP.md
 
-## 18. Próxima ação objetiva
+A taxonomia do `ROADMAP.md` é a referência operacional: **M0–M5**, **T01–T09**, **G0–G5** e POC-05B Etapas 0–6 não devem ser renumerados nem tratados como equivalentes.
 
-**Com o repositório em evolução:**
+| Marco | Resultado de produto | Dependência e estado |
+|---|---|---|
+| **M0 — Foundation & Discovery** | Fundação, host, hipóteses, POCs e decisões | Em progresso; POC-05B bloqueada sem impedir M1 |
+| **M1 — Web Assisted MVP** | **Primeiro aplicativo real** com Activity Bar, painel, contexto, prompt, importação e diff | Planejado; não depende de G3 |
+| **M2 — Beta open source** | Segurança, acessibilidade, testes, VSIX, documentação e experiência refinada | Depende do MVP |
+| **M3 — Official API Agent** | Agente verdadeiro com API oficial, BYOK e ferramentas autorizadas | Condicional a capacidades, acesso e G4 |
+| **M4 — Web Bridge** | Integração legítima com experiência web e possível agência sobre ela | Exige G3-T + G3-W e G4 para agent loop |
+| **M5 — Publicação e manutenção** | Releases transparentes, governança e lojas suportadas | Exige G5; Open VSX é alvo inicial |
 
-1. Manter este documento como `PRD.md` na raiz do projeto.
-2. Não desenvolver um bridge para Gemini Web ainda.
-3. Preparar `docs/validation/compatibility-matrix.md`.
-4. Abrir **somente o Antigravity IDE** e registrar sua versão e o sistema operacional.
-5. Executar primeiro **POC-01**: verificar se a paleta de comandos oferece um navegador integrado e identificar seu nome exato (se existir).
-6. Se existir, executar **POC-02/03**: abrir `https://gemini.google.com/app`, testar o login e verificar a seleção do Argon. Se não existir, registrar `unsupported` e avaliar fluxo assistido com navegador externo.
-7. Trazer os resultados para escolher o próximo passo técnico. **Não é necessário instalar VS Code para desenvolver o Argonauta.**
+**Ordem de valor:** estabilizar a fundação necessária e iniciar M1 (T04–T06), enquanto T03/POC-05B e a avaliação G3-W prosseguem como trilhas de risco separadas. **Não equiparar bloqueio de IPC a bloqueio do produto.**
 
-## 19. Fontes oficiais consultadas (baseline em 14/10/2026)
+## 15. Comunicação, transparência e lançamento
 
-> Links de referência para implementação; revalidar antes do release, pois produtos e termos podem mudar.
+### Afirmações permitidas somente quando demonstradas
 
-1. [VS Code — Integrated Browser](https://code.visualstudio.com/docs/debugtest/integrated-browser): navegação, sessões, permissões e ferramentas de agentes.
-2. [VS Code — Webview API](https://code.visualstudio.com/api/extension-guides/webview): painéis, mensagens, isolamento e segurança.
-3. [VS Code — Workspace Trust](https://code.visualstudio.com/api/extension-guides/workspace-trust): compatibilidade com workspaces não confiáveis.
-4. [VS Code — Language Model Chat Provider API](https://code.visualstudio.com/api/extension-guides/ai/language-model-chat-provider): provedores com modelos e respostas programáticas.
-5. [VS Code — Publishing Extensions](https://code.visualstudio.com/api/working-with-extensions/publishing-extension): VSIX, publisher e Visual Studio Marketplace.
-6. [Eclipse Open VSX — Publishing Extensions](https://github.com/eclipse-openvsx/openvsx/wiki/Publishing-Extensions): namespace e publicação no Open VSX.
-7. [Gemini API — Billing](https://ai.google.dev/gemini-api/docs/billing): cobrança e limites da API, distintos de uma assinatura Gemini Web.
-8. [Google — Terms of Service](https://policies.google.com/terms): condições de utilização, inclusive para acesso automatizado e engenharia reversa.
-9. [Google — Gemini Apps Privacy Hub](https://support.google.com/gemini/answer/13594961?hl=pt-BR): tratamento de conteúdos compartilhados no Gemini.
+- “Extensão Argonauta com painel próprio no Antigravity IDE”.
+- “Fluxo assistido de contexto e revisão de código com Gemini Web”.
+- “Agente de programação com API oficial”, quando streaming/ferramentas/autorização forem comprovados.
+
+### Afirmações condicionadas a evidência adicional
+
+- “Agente autônomo com Gemini 4 Argon por meio do Google AI Pro”.
+- “Gemini Web funciona como API de agente sem credencial de API”.
+- “Argonauta usa automaticamente sua assinatura Pro dentro da IDE”.
+- “Acesso ilimitado ao Argon”.
+- “Compatível com todas as IDEs baseadas em VS Code”.
+
+Não comunicar nenhuma delas sem provas técnicas reproduzíveis, análise da autorização aplicável e escopo de disponibilidade. README, marketplace e demonstrações devem apresentar o modo realmente implementado, não a visão futura como funcionalidade existente.
+
+A divulgação open source pode incluir vídeos sem cortes, benchmarks reproduzíveis, ADRs, relatórios, issues e matriz de suporte. O projeto é independente e não afiliado aos provedores mencionados.
+
+## 16. Riscos e respostas
+
+| Risco | Efeito | Resposta |
+|---|---|---|
+| Gemini Web/Argon ter instabilidade técnica ou mudanças | Inviabiliza fluxo automatizado por quebra de interface | Focar em estabilidade técnica e segurança; não impor travas de desenvolvimento; usuário ciente dos riscos |
+| O modelo mudar de nome, elegibilidade ou disponibilidade | Instabilidade do provedor | Não acoplar arquitetura à versão específica |
+| Navegador integrado não carregar Gemini Web | Falha de UX integrada | Fallback legítimo externo; não atribuir causa sem diagnóstico |
+| IPC Windows inseguro ou helper não validado | Acesso indevido ao transporte | Gate bloqueante, ADRs, provas negativas e fail closed |
+| Investimento excessivo em POCs sem experiência de usuário | Produto fica indefinidamente sem entrega | Priorizar painel e M1; exigir vínculo entre tarefas e requisitos |
+| Vazamento de código ou segredos | Exposição de informação | Seleção, filtro, prévia, aprovação e testes |
+| Prompt injection / ações destrutivas | Compromete projeto ou ambiente | Orquestrador restritivo, aprovação e rollback |
+| Dependência de DOM/interface web volátil | Quebras de automação | Manter arquitetura modular desacoplada e usuário orientado |
+| Confusão entre assinatura Pro e API | Promessas enganosas, custos não previstos | Separar modos, cobrança e gates |
+| Conflito de marca ou rejeição em marketplace | Impede distribuição | Revisar identidade, política, licença e compatibilidade |
+| Incompatibilidade entre hosts | Falhas após instalação | Matrix e testes por host; Antigravity-first |
+| Sanções ou restrições de terceiros ao usuário | Risco operacional para o usuário | Isenção de responsabilidade clara (AS IS / at your own risk), avisos transparentes e ciência de riscos assumida pelo usuário |
+
+## 17. Decisões arquiteturais e de produto ainda abertas
+
+Preservar a distinção entre o backlog de decisões do PRD e os ADRs efetivamente existentes no repositório; não reutilizar seus números de forma ambígua.
+
+| Tema | Decisão pendente | Quando decidir |
+|---|---|---|
+| Licença | MIT ou Apache-2.0, a escolher pelo mantenedor | Antes do release |
+| Publisher/ícone/marca | Identidade definitiva e direitos de uso | Antes da publicação |
+| Versão mínima de host | Basear na matriz de compatibilidade | Antes do MVP distribuível |
+| UI e tecnologia | `WebviewView` com solução mínima sustentável | Primeiro incremento M1 |
+| Política de patch | Parser restritivo, arquivos e aprovações | M1 |
+| Histórico de sessão | Persistência opcional, exclusão, retenção | M1 |
+| Idiomas do produto | Estratégia de i18n compatível com regras atuais | Antes de interface multilíngue |
+| API oficial | Provedor, modelo, custos e BYOK | M3 |
+| Web Bridge | Resultado de G3-T e G3-W, consentimento e implementação legítima | Antes de M4 |
+| Helper Win32 | Toolchain, binário, provas de DACL e manutenção | POC-05B Etapa 2, ainda bloqueada |
+
+Referências existentes: `docs/architecture/decisions/0001-monorepo-architecture.md`, `0002-node-net-security-gate.md`, `0003-win32-named-pipe-security-probe.md` (esta última é **proposta**, não homologação do helper).
+
+## 18. Próximas ações recomendadas
+
+1. **Aprovar o norte do produto e este PRD revisado** sem converter capacidades previstas em capacidades implementadas.
+2. **Iniciar o primeiro incremento real de M1:** criar `apps/ide-extension` com ícone Activity Bar, view dedicada, `Argonauta: Open`, `Argonauta: Ask About Selection`, prévia e consentimento, sem fingir conexão agêntica.
+3. **Priorizar pesquisa G3-W em paralelo:** verificar mecanismo e permissão de uso programático do Gemini Web/Argon, separado da engenharia IPC.
+4. Manter a **POC-05B Etapa 2 como `blocked`** até ambiente Win32 e provas reais; não iniciar Etapa 3 prematuramente.
+5. Corrigir as referências editoriais e datas-base desatualizadas do `ROADMAP.md` em tarefa separada, sem reescrever seus identificadores estáveis.
+6. Preparar execução end-to-end do MVP em Antigravity e critérios de G2, sem instalar VS Code como pré-requisito.
+7. Nenhum commit, push, merge, instalação de SDK ou modificação do Registro sem solicitação específica do mantenedor.
+
+## 19. Referências principais
+
+### Fontes internas do projeto
+
+- [Repositório e código](https://github.com/LKSFerreira/argonauta).
+- [Regras do agente](AGENTS.md) e [diretrizes de idioma](.agents/rules/language.md).
+- [Roadmap](ROADMAP.md) — marcos, trilhas, gates e estados.
+- [Arquitetura](docs/architecture/overview.md) e [desenho da ponte](docs/architecture/bridge-design.md).
+- [Modelo de ameaças](docs/security/threat-model.md).
+- [ADR-0002](docs/architecture/decisions/0002-node-net-security-gate.md), [ADR-0003](docs/architecture/decisions/0003-win32-named-pipe-security-probe.md).
+- [Validação IPC](docs/validation/ipc-transport.md) e [investigação Win32](docs/validation/ipc-win32-feasibility.md).
+
+### Documentação externa de referência
+
+- [Extensões e Webviews do VS Code](https://code.visualstudio.com/api/extension-guides/webview).
+- [Workspace Trust](https://code.visualstudio.com/api/extension-guides/workspace-trust).
+- [Documentação de publicação de extensões](https://code.visualstudio.com/api/working-with-extensions/publishing-extension).
+- [Open VSX](https://github.com/eclipse-openvsx/openvsx/wiki/Publishing-Extensions).
+- [Cobrança da Gemini API](https://ai.google.dev/gemini-api/docs/billing), independente de direitos da assinatura Google AI Pro.
+- [Termos do Google](https://policies.google.com/terms).
+- [Privacidade dos aplicativos Gemini](https://support.google.com/gemini/answer/13594961?hl=pt-BR).
+- [Segurança de Windows Named Pipes](https://learn.microsoft.com/windows/win32/ipc/named-pipe-security-and-access-rights).
 
 ---
 
-**Critério decisivo do projeto:** Argonauta só poderá ser apresentado como um agente Gemini Web integrado à IDE quando houver uma integração **real, reproduzível, segura e permitida**. Até lá, a promessa pública deve corresponder exatamente ao que foi implementado.
+**Critério decisivo:** o Argonauta deve ser desenvolvido como uma **extensão agêntica de programação com identidade e experiência próprias**. Usar **Gemini Web/Argon com Google AI Pro** permanece a **hipótese distintiva que motivou o projeto**, porém somente poderá ser anunciado como backend funcional quando houver integração real, reproduzível, segura e permitida. Enquanto isso, os incrementos publicados devem identificar honestamente suas capacidades e construir o núcleo de produto, não apenas infraestrutura.

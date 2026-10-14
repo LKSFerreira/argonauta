@@ -18,7 +18,7 @@ O `PRD.md` define **o que o produto deve fazer**. Este `ROADMAP.md` define **aon
 1. **Seis marcos de maturidade do produto, M0–M5:** preservados do roadmap e do PRD existentes.
 2. **Nove trilhas permanentes de execução, T01–T09:** nova organização proposta neste documento, cobrindo todos os marcos e impedindo que tarefas desapareçam quando a POC muda. **Não são apresentadas como recuperação literal de uma suposta lista histórica de nove etapas, cuja versão original não foi localizada.**
 3. **POCs e subetapas, com identificadores próprios:** por exemplo, POC-05B tem **sete etapas técnicas (0–6)**; elas não devem ser confundidas com M0–M5 nem com T01–T09.
-4. **Gates de decisão, G0–G5:** definem aprovação/bloqueio técnico, funcional, contratual e de publicação.
+4. **Gates de decisão, G0–G5:** definem aprovação/bloqueio técnico, funcional, operacional e de publicação, sem imposição de travas ao desenvolvimento por limites contratuais de terceiros (com usuário ciente dos riscos).
 5. **Tarefas e evidências:** mudanças locais, commits, CI, testes reais e relatórios.
 
 Uma POC pode ser bloqueada sem bloquear automaticamente a próxima entrega de produto, desde que a entrega não dependa tecnicamente dela. Em particular: **o MVP Web Assistido não exige POC-05B, HMAC, Chrome Native Messaging persistente nem Gate G3 aprovado.**
@@ -72,7 +72,7 @@ A motivação inicial foi a diferença observada entre a disponibilidade do mode
 - **Consentimento:** contexto e alterações devem ser revisados antes de sair do workspace ou afetar arquivos.
 - **Segurança por padrão:** mínimo privilégio, schema estrito, limites de recurso, Workspace Trust, restrições de caminho e symlinks, proteção contra prompt injection.
 - **Privacidade:** nunca solicitar senhas, códigos 2FA, cookies, tokens de login, perfis de navegador ou credenciais de sessão. Nenhuma telemetria e nenhum upload automático por padrão.
-- **Conformidade:** nada de APIs privadas, scraping não autorizado, bypass de CSP, CAPTCHA, paywall, restrições de assinatura ou anti-bot.
+- **Sem amarras ao desenvolvimento por limites contratuais de terceiros:** a segurança técnica e a proteção local do ambiente do desenvolvedor são rigorosas; regras e restrições de termos de terceiros não bloqueiam a engenharia da ferramenta e são de responsabilidade do usuário (*At Your Own Risk* / *Disclaimer*).
 - **Arquitetura profissional:** TypeScript estrito, código modular, limites explícitos, testes, CI, ADRs e nomenclatura estrutural consistente. Não voltar a diretórios genéricos `experiments/` ou criar aplicativos vazios.
 - **Execução responsável:** agente não publica commits/push/PR nem modifica o Registro do Windows sem autorização explícita.
 - **Falha como evidência:** um experimento bloqueado deve permanecer documentado, não ser maquiado como sucesso.
@@ -89,7 +89,7 @@ Estes identificadores são **permanentes**; não renumerar os marcos a cada spri
 | **M1 — Web Assisted MVP** | Extensão útil no Antigravity sem automação web: contexto → prompt → resposta → diff. | `planned` | G1 em nível compatível com o fluxo escolhido; G2 para concluir. | **Sim. Não depende de POC-05B ou G3.** |
 | **M2 — Open-source Beta** | Usabilidade, testes, segurança, empacotamento e validação com usuários. | `planned` | MVP funcional e requisitos de beta. | Preparação pode começar durante M1. |
 | **M3 — Official API Agent** | Provedor oficial, chaves próprias, streaming, ferramentas autorizadas. | `conditional` | Documentação/API/conta/faturamento legítimos; G4 para autonomia. | Trilha paralela pós-núcleo do produto. |
-| **M4 — Web Bridge** | Ponte contínua **e** integração web legitimamente viável. | `conditional`, alto risco | **G3 técnico + G3 web/contratual**; G4 se houver agent loop. | Pesquisa de viabilidade pode ser paralela, implementação é condicionada. |
+| **M4 — Web Bridge** | Ponte contínua **e** integração web funcionalmente viável (usuário ciente dos riscos). | `conditional`, alto risco | **G3 técnico + G3 web (viabilidade e estabilidade)**; G4 se houver agent loop. | Pesquisa de viabilidade pode ser paralela, implementação é condicionada. |
 | **M5 — Publicação e manutenção** | Identidade/licença, releases, Open VSX, suporte e governança. | `planned` | G5 e homologação da plataforma anunciada. | Preparação antecipada; publicação após critérios. |
 
 **Sequência mínima de valor:** M0 (fundação suficiente) → M1 → M2 → M5 (lançamento do modo Web Assisted). M3 e M4 são caminhos **opcionais/condicionais**, e **não** barreiras para lançar o Web Assisted.
@@ -134,12 +134,12 @@ O desenho indica **trilhas**, não a aprovação automática de conexões. T07 p
 | **G0 — Discovery** | Host, necessidades, hipóteses e riscos estão identificados? | PRD, matriz, requisitos e plano de experimentos. | `done` para iniciar pesquisa; discovery permanece contínuo. |
 | **G1 — Fluxo Web Utilizável** | O usuário consegue efetivamente realizar o fluxo web normal em navegador suportado? | Abrir Gemini Web por sessão legítima; conseguir conversar/interagir normalmente; registrar host/data, sem acessar credenciais. Fallback externo é suficiente para Web Assisted. | **`pending_validation` para o fluxo completo do MVP.** O anexo declara Chrome externo aprovado, mas o PONG do Native Messaging **não é** prova de conversa Gemini. Validar/ligar a evidência específica. |
 | **G2 — MVP Manual Útil** | O fluxo contexto → prompt → Gemini Web normal → importação → diff/aplicação segura é útil? | POC-06 e M1 concluídos, consentimento, testes e avaliação manual no Antigravity. | `planned`. |
-| **G3 — Integração Bidirecional Permitida** | Existe um caminho técnico **e contratualmente permitido** de integração com o serviço web de terceiros? | **G3-T:** transporte local autenticado com DACL/identidade, Chrome Native Messaging persistente e E2E; **G3-W:** mecanismo público/documentado, autorização real, limites e termos aplicáveis ao Gemini Web. **Ambos** obrigatórios para Web Bridge. | `blocked/pending` em G3-T pelo IPC; **G3-W não validado**. |
+| **G3 — Integração Bidirecional** | Existe um caminho técnico funcional e estável de integração com o serviço web (usuário ciente dos riscos)? | **G3-T:** transporte local autenticado com DACL/identidade, Chrome Native Messaging e E2E; **G3-W:** viabilidade técnica e estabilidade da interface web, com o usuário informado e assumindo os riscos perante terceiros (*at your own risk*). | `blocked/pending` em G3-T pelo IPC; **G3-W não validado**. |
 | **G4 — Agente Autônomo** | Existe provedor habilitado e orquestrador seguro para múltiplas ações? | API oficial **ou** Web Bridge que passou G3; tool calling real, permissões, aprovações, prompt-injection tests, rollback. | `conditional`. |
 | **G5 — Publicação** | Existe release transparente, testada, licenciada e compatível? | Licença/publisher, segurança, VSIX, documentação, testes, compatibilidade e políticas da loja. | `planned`. |
 
 **Decisões independentes essenciais:**
-- **G3-T** valida o *canal*; **G3-W** valida a *possibilidade e legitimidade de usá-lo com Gemini Web*. Não declarar G3 aprovado após apenas uma mensagem IDE ↔ Chrome.
+- **G3-T** valida o *transporte seguro*; **G3-W** valida a *viabilidade técnica e estabilidade com o Gemini Web*. Não se impõem travas contratuais de terceiros no desenvolvimento; a responsabilidade perante termos é do usuário.
 - **G4 pode ser aprovado pela rota API oficial mesmo se G3-W falhar**.
 - **G1 não exige DOM, API privada nem sincronização**; exige um navegador real utilizável para o usuário.
 - Falha definitiva de G3-W implica **encerrar T08** e manter M1/M2/M3/M5 viáveis.
@@ -171,7 +171,7 @@ O desenho indica **trilhas**, não a aprovação automática de conexões. T07 p
 | **POC-02** | Gemini Web no integrado | Falha observada: tela branca na URL correta, 403 em outro teste; causa-raiz não provada. Não contornar controles. |
 | **POC-03** | Disponibilidade/interação Argon | Disponibilidade observada pelo usuário no Gemini Web; conversa e compatibilidade por host precisam de evidência de gate apropriada. |
 | **POC-04** | Portabilidade VS Code | Posterior/opcional; não bloquear Antigravity. |
-| **POC-05** | Fronteira pública extensão ↔ navegador | Pesquisa técnica e contratual incompleta; Chrome Native Messaging não substitui comprovação Gemini Web. |
+| **POC-05** | Fronteira técnica extensão ↔ navegador | Pesquisa técnica de viabilidade e comunicação; Chrome Native Messaging não substitui comprovação de interação com Gemini Web. |
 | **POC-05A** | Chrome MV3 ↔ Native Host Node.js via stdio | `done`: PING/PONG 1.0 real, 13 testes e repetição manual após migração. |
 | **POC-05B** | Antigravity ↔ host ↔ Chrome, autenticado e ponta a ponta | `in_progress` com **Etapa 2 bloqueada segundo relatório anexado**. |
 | **POC-06** | MVP de contexto, prompt, importação de resposta e diff | `planned`; pertence à realização de M1. |
