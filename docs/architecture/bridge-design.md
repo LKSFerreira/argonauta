@@ -463,7 +463,7 @@ Todo o trabalho será realizado e depurado no Antigravity IDE. O VS Code não se
 
 ### Etapa 1 — Congelar contratos e regressões
 
-- manter `experiments/chrome-native-bridge/` sem alterações;
+- manter `tools/native-messaging-smoke/` funcional e sem alterações comportamentais;
 - executar os 13 testes da POC-05A antes de qualquer mudança;
 - criar fixtures binárias PING/PONG e testes de conformidade no novo experimento;
 - versionar schemas dos novos tipos sem mudar `versaoProtocolo: "1.0"`.

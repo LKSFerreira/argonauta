@@ -12,7 +12,7 @@
   <p>
     <img src="https://img.shields.io/badge/status-discovery-7C3AED?style=for-the-badge" alt="Project status: discovery" />
     <img src="https://img.shields.io/badge/platform-Antigravity%20IDE--first-1F6FEB?style=for-the-badge" alt="Primary platform: Antigravity IDE" />
-    <img src="https://img.shields.io/badge/TypeScript-planned-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript planned" />
+    <img src="https://img.shields.io/badge/TypeScript-strict-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript strict" />
     <img src="https://img.shields.io/badge/license-to%20be%20defined-6B7280?style=for-the-badge" alt="License: to be defined" />
   </p>
 </div>
@@ -61,9 +61,11 @@ The project is at **M0 — Foundation / Discovery**. The immediate work is evide
 
 - [x] Product requirements and discovery plan documented.
 - [x] Initial compatibility matrix and project roadmap created.
-- [ ] Record Antigravity IDE host capabilities and versions.
-- [ ] Validate the browser and login flow without credential interception.
-- [ ] Determine whether an allowed, documented extension-to-browser channel exists.
+- [x] Record Antigravity IDE host capabilities and versions.
+- [x] Validate the available browser flow and document its limitations without credential interception.
+- [x] Validate Chrome Native Messaging and the public extension APIs required by the bridge.
+- [x] Freeze protocol `1.0`, binary fixtures, and robustness limits.
+- [ ] Implement and validate the authorized local transport for POC-05B Stage 2.
 - [ ] Decide the G1 and G3 gates before any claim of web automation.
 
 ## 🧪 Discovery gates
@@ -87,13 +89,38 @@ The project is at **M0 — Foundation / Discovery**. The immediate work is evide
 
 - [Product Requirements Document](PRD.md) — scope, safeguards, hypotheses, experiments, and acceptance criteria.
 - [Roadmap](ROADMAP.md) — current phase, next delivery, and open decisions.
-- [Compatibility matrix](docs/experiments/compatibility-matrix.md) — evidence by host, version, operating system, and result.
+- [Compatibility matrix](docs/validation/compatibility-matrix.md) — evidence by host, version, operating system, and result.
 - [Discovery implementation plan](.metadocs/implementation_plan/2026-10-14-discovery.md) — active validation plan.
 - [Project history](HISTORY.md) — recorded milestones.
+- [Architecture](docs/architecture/overview.md) — component boundaries and dependency direction.
+- [Development guide](docs/development/getting-started.md) — setup and validation in Antigravity IDE.
+- [Security model](docs/security/threat-model.md) — trust boundaries and residual risks.
+
+## 🧱 Repository structure
+
+- `apps/` — distributable applications, created only after product approval.
+- `packages/` — reusable libraries with explicit dependencies.
+- `tools/` — compatibility probes and reproducible technical validations.
+- `tests/` — cross-project integration tests and shared fixtures.
+- `docs/` — architecture, decisions, product documentation, and validation evidence.
+- `scripts/` — shared development and platform automation.
+
+## 🛠️ Development
+
+Prerequisites: Windows, Node.js 20 or newer, npm, Google Chrome for the manual Native Messaging validation, and Antigravity IDE. VS Code is not required.
+
+```powershell
+npm ci
+npm run typecheck
+npm test
+npm run verificar:fixtures
+```
+
+The automated baseline contains 77 tests. Chrome and Antigravity interactions remain manual validations and are never reported as CI successes. See the [development guide](docs/development/getting-started.md) for component-specific commands.
 
 ## 🤝 Using and contributing
 
-There is nothing to install yet. Until the discovery gates are documented, the most valuable contribution is careful, reproducible evidence about supported hosts and public APIs.
+There is no production extension to install yet. Read [CONTRIBUTING.md](CONTRIBUTING.md) before proposing changes. Until the discovery gates are documented, the most valuable contribution is careful, reproducible evidence about supported hosts and public APIs.
 
 Please do not build or propose integrations based on cookie extraction, private endpoints, browser profile access, DOM scraping, or attempts to bypass provider controls. Those approaches are outside the project’s scope.
 
@@ -160,9 +187,11 @@ O projeto está em **M0 — Fundação / Discovery**. O trabalho imediato é col
 
 - [x] PRD e plano de discovery documentados.
 - [x] Matriz inicial de compatibilidade e roadmap criados.
-- [ ] Registrar capacidades e versões do host Antigravity IDE.
-- [ ] Validar navegador e login sem interceptar credenciais.
-- [ ] Determinar se existe canal permitido e documentado entre extensão e navegador.
+- [x] Registrar capacidades e versões do host Antigravity IDE.
+- [x] Validar o fluxo de navegador disponível e documentar suas limitações sem interceptar credenciais.
+- [x] Validar Chrome Native Messaging e as APIs públicas da extensão necessárias à ponte.
+- [x] Congelar protocolo `1.0`, fixtures binárias e limites de robustez.
+- [ ] Implementar e validar o transporte local autorizado da Etapa 2 da POC-05B.
 - [ ] Decidir os gates G1 e G3 antes de qualquer alegação de automação web.
 
 ## 🧪 Gates de discovery
@@ -186,13 +215,38 @@ O projeto está em **M0 — Fundação / Discovery**. O trabalho imediato é col
 
 - [Documento de Requisitos do Produto](PRD.md) — escopo, salvaguardas, hipóteses, experimentos e critérios de aceite.
 - [Roadmap](ROADMAP.md) — fase atual, próxima entrega e decisões em aberto.
-- [Matriz de compatibilidade](docs/experiments/compatibility-matrix.md) — evidências por host, versão, sistema operacional e resultado.
+- [Matriz de compatibilidade](docs/validation/compatibility-matrix.md) — evidências por host, versão, sistema operacional e resultado.
 - [Plano de implementação de discovery](.metadocs/implementation_plan/2026-10-14-discovery.md) — plano de validação ativo.
 - [Histórico do projeto](HISTORY.md) — marcos registrados.
+- [Arquitetura](docs/architecture/overview.md) — fronteiras dos componentes e direção das dependências.
+- [Guia de desenvolvimento](docs/development/getting-started.md) — setup e validação no Antigravity IDE.
+- [Modelo de segurança](docs/security/threat-model.md) — limites de confiança e riscos residuais.
+
+## 🧱 Estrutura do repositório
+
+- `apps/` — aplicações distribuíveis, criadas somente após aprovação de produto.
+- `packages/` — bibliotecas reutilizáveis com dependências explícitas.
+- `tools/` — probes de compatibilidade e validações técnicas reproduzíveis.
+- `tests/` — testes de integração entre projetos e fixtures compartilhadas.
+- `docs/` — arquitetura, decisões, documentação de produto e evidências de validação.
+- `scripts/` — automações compartilhadas de desenvolvimento e plataforma.
+
+## 🛠️ Desenvolvimento
+
+Pré-requisitos: Windows, Node.js 20 ou superior, npm, Google Chrome para a validação manual de Native Messaging e Antigravity IDE. O VS Code não é necessário.
+
+```powershell
+npm ci
+npm run typecheck
+npm test
+npm run verificar:fixtures
+```
+
+A linha de base automatizada contém 77 testes. As interações com Chrome e Antigravity continuam sendo validações manuais e nunca são apresentadas como sucesso de CI. Consulte o [guia de desenvolvimento](docs/development/getting-started.md) para os comandos específicos de cada componente.
 
 ## 🤝 Uso e contribuições
 
-Ainda não há instalação disponível. Até que os gates de discovery sejam documentados, a contribuição mais valiosa é produzir evidências cuidadosas e reproduzíveis sobre hosts compatíveis e APIs públicas.
+Ainda não há extensão de produção disponível para instalação. Leia [CONTRIBUTING.md](CONTRIBUTING.md) antes de propor alterações. Até que os gates de discovery sejam documentados, a contribuição mais valiosa é produzir evidências cuidadosas e reproduzíveis sobre hosts compatíveis e APIs públicas.
 
 Não implemente nem proponha integrações baseadas em extração de cookies, endpoints privados, acesso a perfis de navegador, DOM scraping ou tentativas de contornar controles de provedores. Essas abordagens estão fora do escopo do projeto.
 

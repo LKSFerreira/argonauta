@@ -8,24 +8,24 @@
 
 ## Objetivo e limites
 
-Esta etapa congela a representação binária PING/PONG `1.0` aprovada na POC-05A e define contratos estritos para as mensagens futuras da POC-05B. A implementação está isolada em `experiments/poc-05b-contratos/`.
+Esta etapa congela a representação binária PING/PONG `1.0` aprovada na POC-05A e define contratos estritos para as mensagens futuras da POC-05B. A implementação reutilizável está em `packages/protocol/`.
 
 Não foram implementados Named Pipes, servidor ou cliente IPC, novo Native Messaging Host, comunicação com Chrome, HMAC, provisionamento de segredos, alteração do Registro, acesso à rede, Gemini Web ou execução de comandos.
 
-O diretório `experiments/chrome-native-bridge/` não foi modificado. Seu limite legado de 1 MiB permanece intacto; o limite de 64 KiB aplica-se somente aos novos contratos.
+O código preservado em `tools/native-messaging-smoke/` não recebeu alterações comportamentais. Seu limite legado de 1 MiB permanece intacto; o limite de 64 KiB aplica-se somente aos novos contratos.
 
 ## Arquitetura
 
 | Módulo | Responsabilidade |
 |---|---|
-| `src/tipos.ts` | Tipos TypeScript, versão `1.0`, limites e códigos de erro funcionais. |
-| `src/erros.ts` | Erros locais com códigos determinísticos e mensagens sem conteúdo recebido. |
-| `src/estrutura-json.ts` | Inspeção estrutural iterativa e compartilhada, sem executar comportamento do objeto. |
-| `src/enquadramento.ts` | Serialização e decodificação incremental de `[uint32][JSON UTF-8]`, sem transporte. |
-| `src/validacao.ts` | Validação estrita em tempo de execução, sem coerção ou mutação. |
+| `src/types.ts` | Tipos TypeScript, versão `1.0`, limites e códigos de erro funcionais. |
+| `src/errors.ts` | Erros locais com códigos determinísticos e mensagens sem conteúdo recebido. |
+| `src/json-structure.ts` | Inspeção estrutural iterativa e compartilhada, sem executar comportamento do objeto. |
+| `src/framing.ts` | Serialização e decodificação incremental de `[uint32][JSON UTF-8]`, sem transporte. |
+| `src/validation.ts` | Validação estrita em tempo de execução, sem coerção ou mutação. |
 | `fixtures/` | Artefatos binários PING/PONG estáveis e manifesto verificável. |
 | `scripts/regenerar-fixtures.mjs` | Regeneração manual e explícita dos artefatos fixos. Não participa da execução dos testes. |
-| `testes/` | Compatibilidade real com a POC-05A, framing, schemas e robustez. |
+| `tests/` | Compatibilidade real com a POC-05A, framing, schemas e robustez. |
 
 Contrato, serialização e transporte permanecem separados. Esta etapa não possui código capaz de abrir porta, pipe, processo ou conexão.
 
@@ -112,23 +112,19 @@ Esse comando sobrescreve os dois binários e o manifesto. Depois dele, o diff he
 
 ## Comandos
 
-O experimento não instala dependências. Para manter a execução offline nesta etapa, ele usa o TypeScript 5.9.3 e os tipos Node.js já presentes no probe da Etapa 0.
+O pacote declara explicitamente TypeScript 5.9.3 e os tipos Node.js usados na compilação estrita. O workspace npm centraliza a instalação dessas dependências de desenvolvimento.
 
 ```powershell
-cd experiments/poc-05b-contratos
-npm run compilar
-npm test
+npm --workspace @argonauta/protocol run compilar
+npm --workspace @argonauta/protocol test
 ```
 
 Regressões:
 
 ```powershell
-cd ../chrome-native-bridge
-npm test
-
-cd ../antigravity-extension-probe
-npm run compilar
-npm test
+npm --workspace @argonauta/native-messaging-smoke test
+npm --workspace @argonauta/compatibility-probe run compilar
+npm --workspace @argonauta/compatibility-probe test
 ```
 
 ## Evidências observadas
@@ -158,7 +154,7 @@ Não existem scripts de lint ou auditoria configurados no novo pacote. Nenhuma d
 
 ### Tipos Node.js fora do novo pacote
 
-A primeira compilação encontrou o TypeScript, mas não os tipos Node.js. O `tsconfig.json` passou a apontar explicitamente para `../antigravity-extension-probe/node_modules/@types`, sem download, instalação ou duplicação de dependências.
+A primeira compilação da implementação original encontrou o TypeScript, mas não os tipos Node.js. Na estrutura de monorepo, `@argonauta/protocol` passou a declarar suas próprias dependências de desenvolvimento, eliminando o acoplamento ao `node_modules` do probe de compatibilidade.
 
 ### Efeito colateral por propriedade acessora
 

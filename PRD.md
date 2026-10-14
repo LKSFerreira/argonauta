@@ -154,7 +154,7 @@ Os experimentos abaixo são **sequenciais e com registro de evidências**. Execu
 
 **Procedimento:** registrar **Antigravity IDE** instalado, versão, SO, disponibilidade da paleta de comandos, navegador integrado e versão do mecanismo de extensões. Não exigir instalação de VS Code. Registrar outros hosts apenas se forem testados depois.
 
-**Saída:** `docs/experiments/compatibility-matrix.md` com host, versão, SO, data e resultado.
+**Saída:** `docs/validation/compatibility-matrix.md` com host, versão, SO, data e resultado.
 
 **Aceitação:** matriz preenchida; recursos não existentes marcados como `unsupported`, nunca assumidos.
 
@@ -355,33 +355,30 @@ interface ProviderAdapter {
 
 ```text
 argonauta/
-├── PRD.md
 ├── README.md                  # inglês; instalação + capacidades/limitações reais
-├── LICENSE                    # escolher antes de publicar
-├── SECURITY.md
-├── CONTRIBUTING.md
-├── CHANGELOG.md
+├── AGENTS.md
 ├── package.json
-├── tsconfig.json
-├── src/
-│   ├── extension.ts
-│   ├── host/
-│   ├── context/
-│   ├── providers/
-│   │   ├── provider.ts
-│   │   ├── web-assisted.ts
-│   │   └── official-api.ts  # posterior
-│   ├── prompts/
-│   ├── patches/
-│   ├── security/
-│   └── ui/
-├── test/
-├── media/
+├── LICENSE                    # escolher antes de publicar
+├── apps/
+│   ├── ide-extension/
+│   ├── chrome-extension/
+│   └── native-host/
+├── packages/
+│   ├── protocol/
+│   └── ipc/
+├── tools/
+│   ├── compatibility-probe/
+│   └── native-messaging-smoke/
+├── tests/
+│   ├── integration/
+│   └── fixtures/
 ├── docs/
-│   ├── architecture.md
-│   ├── privacy.md
-│   └── experiments/
-│       └── compatibility-matrix.md
+│   ├── architecture/
+│   ├── decisions/
+│   ├── product/
+│   └── validation/
+├── scripts/
+│   └── windows/
 └── .github/
     ├── workflows/
     └── ISSUE_TEMPLATE/
@@ -479,7 +476,7 @@ argonauta/
 
 - [ ] Confirmar disponibilidade de nome e namespace.
 - [ ] Criar repositório Git e branch principal.
-- [ ] Salvar este `PRD.md`.
+- [x] Manter este documento como `PRD.md` na raiz do projeto.
 - [ ] Definir licença e regras de contribuição.
 - [ ] Executar POC-01 a POC-05 com relatório reproduzível.
 - [ ] Decidir G1 e G3 **antes** de qualquer promessa sobre automação web.
@@ -593,11 +590,11 @@ Essas promessas **não devem ser usadas** sem documentação técnica reproduzí
 
 ## 18. Próxima ação objetiva
 
-**Enquanto o repositório é criado:**
+**Com o repositório em evolução:**
 
-1. Salvar este documento como `PRD.md` na raiz do projeto.
+1. Manter este documento como `PRD.md` na raiz do projeto.
 2. Não desenvolver um bridge para Gemini Web ainda.
-3. Preparar `docs/experiments/compatibility-matrix.md`.
+3. Preparar `docs/validation/compatibility-matrix.md`.
 4. Abrir **somente o Antigravity IDE** e registrar sua versão e o sistema operacional.
 5. Executar primeiro **POC-01**: verificar se a paleta de comandos oferece um navegador integrado e identificar seu nome exato (se existir).
 6. Se existir, executar **POC-02/03**: abrir `https://gemini.google.com/app`, testar o login e verificar a seleção do Argon. Se não existir, registrar `unsupported` e avaliar fluxo assistido com navegador externo.

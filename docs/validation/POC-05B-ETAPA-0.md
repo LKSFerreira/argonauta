@@ -8,7 +8,7 @@ Esta etapa não implementa Named Pipe, Native Messaging Host, comunicação com 
 
 ## Implementação
 
-A extensão isolada está em `experiments/antigravity-extension-probe/` e registra somente o comando **`Argonauta: Check Compatibility`**.
+A extensão isolada está em `tools/compatibility-probe/` e registra somente o comando **`Argonauta: Check Compatibility`**.
 
 O comando produz resultados `pass`, `fail` ou `unsupported` para:
 

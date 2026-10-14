@@ -4,6 +4,9 @@
 
 **Fase:** M0 — Foundation / Discovery.
 
+- [x] Migrar a base validada para um monorepo TypeScript com limites entre `packages/`, `tools/`, `tests/`, `docs/` e futuras aplicações.
+- [x] Preparar CI Windows para typecheck, regressões, fixtures e auditoria de dependências; primeira execução remota pendente de commit e push autorizados.
+
 - [x] Registrar o PRD e estruturar a documentação inicial.
 - [x] Definir TypeScript + Node.js 20+ como stack planejada da extensão.
 - [x] Criar matriz de compatibilidade e plano de discovery.

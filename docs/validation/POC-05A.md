@@ -34,8 +34,8 @@ Popup exibe o resultado
 ### Componentes
 
 - `extension/`: extensão Chrome Manifest V3 com popup e somente a permissão `nativeMessaging`.
-- `native-host/src/protocolo.mjs`: serialização e desserialização incremental do protocolo binário.
-- `native-host/src/mensagens.mjs`: validação estrita de origem e contrato PING/PONG.
+- `native-host/src/protocol.mjs`: serialização e desserialização incremental do protocolo binário.
+- `native-host/src/messages.mjs`: validação estrita de origem e contrato PING/PONG.
 - `native-host/src/host.mjs`: processo stdio iniciado pelo Chrome.
 - `native-host/windows/`: manifesto, launcher e scripts manuais de Registro para Windows.
 - `tests/`: testes unitários e de integração do processo.
@@ -87,7 +87,7 @@ O campo `key` do manifesto fixa o ID durante o carregamento local. Depois de car
 Na raiz do repositório:
 
 ```powershell
-npm --prefix experiments/chrome-native-bridge test
+npm --prefix tools/native-messaging-smoke test
 ```
 
 Os testes cobrem:
@@ -113,6 +113,9 @@ Também foram aprovadas as verificações de sintaxe dos módulos JavaScript, do
 
 ## Instalação manual no Windows
 
+> [!IMPORTANT]
+> O Registro do Windows armazena o caminho absoluto do manifesto. Depois da migração para `tools/native-messaging-smoke/`, uma instalação anterior continuará apontando para o caminho antigo. Execute manualmente o script de instalação abaixo para atualizar esse valor. A migração do repositório não altera o Registro automaticamente.
+
 > [!CAUTION]
 > Os scripts abaixo alteram o Registro do Windows em `HKCU`. Eles não foram executados automaticamente. Leia-os antes da execução e confirme a operação apenas se concordar com a chave e o caminho apresentados.
 
@@ -121,14 +124,14 @@ Também foram aprovadas as verificações de sintaxe dos módulos JavaScript, do
 3. Escolha **Carregar sem compactação** e selecione:
 
    ```text
-   experiments/chrome-native-bridge/extension
+   tools/native-messaging-smoke/extension
    ```
 
 4. Confirme que o ID exibido é `kmhnfligldbfbjmdmodckpmbnfmehfba`.
 5. No terminal aberto na raiz do repositório, execute manualmente:
 
    ```powershell
-   powershell -ExecutionPolicy Bypass -File experiments/chrome-native-bridge/native-host/windows/instalar-host.ps1
+   powershell -ExecutionPolicy Bypass -File tools/native-messaging-smoke/native-host/windows/install-host.ps1
    ```
 
 6. Revise a chave e o caminho mostrados pelo script. Digite `INSTALAR` somente para autorizar a criação da chave:
@@ -152,12 +155,24 @@ Também foram aprovadas as verificações de sintaxe dos módulos JavaScript, do
 Execute manualmente:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File experiments/chrome-native-bridge/native-host/windows/desinstalar-host.ps1
+powershell -ExecutionPolicy Bypass -File tools/native-messaging-smoke/native-host/windows/uninstall-host.ps1
 ```
 
 Revise a chave mostrada e digite `DESINSTALAR` para autorizar sua remoção. Depois, remova a extensão em `chrome://extensions`.
 
 O script remove somente a chave de Registro da POC-05A e não apaga arquivos do repositório.
+
+### Rollback para um checkout anterior
+
+Se o novo caminho falhar:
+
+1. Execute manualmente `uninstall-host.ps1` neste checkout e confirme `DESINSTALAR`.
+2. Restaure ou abra o checkout anterior que contém o manifesto antigo.
+3. Execute manualmente o instalador daquele checkout e confirme `INSTALAR`.
+4. Recarregue a extensão Chrome correspondente àquele checkout.
+5. Repita **Test Connection** e confirme o PONG.
+
+O rollback do Registro não restaura arquivos nem troca branches. Ele apenas remove e recria a chave `HKCU` com o caminho do manifesto escolhido.
 
 ## Critérios de aceitação
 
@@ -177,6 +192,7 @@ O script remove somente a chave de Registro da POC-05A e não apaga arquivos do 
 - **Integração real Chrome ↔ Node.js:** Resposta `PONG` recebida no popup da extensão com protocolo versão `1.0` e host versão `0.1.0`.
 - **Identidade da extensão:** Conferida e compatível com a chave fixada (`kmhnfligldbfbjmdmodckpmbnfmehfba`).
 - **Comportamento observado:** O Chrome iniciou o processo Node.js nativo com sucesso, enviou o PING e processou o PONG sem erros no console ou no subsistema de Native Messaging.
+- **Migração do caminho em 14/10/2026:** o mantenedor removeu manualmente o registro antigo e registrou com sucesso o manifesto em `tools/native-messaging-smoke/`. A troca PING/PONG deve ser repetida após a migração para concluir a validação comportamental do novo caminho.
 
 ## Próxima missão: POC-05B — Antigravity IDE ↔ Chrome
 

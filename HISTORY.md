@@ -14,3 +14,12 @@
 - Contrato validado com 13/13 testes automatizados, protocolo `1.0`, host `0.1.0` e ID fixado `kmhnfligldbfbjmdmodckpmbnfmehfba`.
 - Ajustada a matriz de compatibilidade para tratar restrições de Webview no Jetski Preview como hipótese provável, sem confirmação categórica de causa única.
 - Definida a próxima etapa técnica: POC-05B para comunicação de ponta a ponta (Antigravity IDE ↔ Chrome via IPC local).
+
+## 2026-10-14 — Migração para monorepo TypeScript
+
+- Reorganizados aplicações futuras, pacotes reutilizáveis, ferramentas, testes, documentação e scripts em limites explícitos.
+- Promovidos os contratos congelados da POC-05B para `packages/protocol`, sem alterar o protocolo `1.0` nem as fixtures PING/PONG.
+- Mantidos os protótipos validados como `tools/compatibility-probe` e `tools/native-messaging-smoke`, sem promovê-los prematuramente a aplicações.
+- Adotados npm workspaces para declarar dependências por projeto e executar a linha de base completa pela raiz.
+- Registrada a decisão arquitetural em `docs/architecture/decisions/0001-monorepo-architecture.md`.
+- Preservada a exigência de reinstalação manual do Native Messaging Host após a mudança do caminho absoluto do manifesto.
