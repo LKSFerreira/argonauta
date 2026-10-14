@@ -98,12 +98,12 @@ Falha de representação, identidade, excesso ou truncamento não produz respost
 | M10 | `pass` | automação multiprocesso | quatro criadores concorrentes foram rejeitados; somente o primeiro servidor atendeu |
 | M11 | `pass` | automação | literal incorreto, sufixo, NUL, bytes arbitrários e truncamento foram rejeitados |
 | M12 | `pass` | automação | vazio, 64 bytes inválidos, 65 bytes e lote concatenado foram rejeitados; buffer fixo |
-| M13 | `pass` | automação | cliente silencioso e servidor sem cliente terminaram por timeout/cancelamento finitos |
+| M13 | `pass` | automação | cliente silencioso e servidor sem cliente terminaram por timeout/cancelamento finitos, inclusive em repetição |
 | M14 | `pass` | automação multiprocesso | cliente e helper interrompidos encerraram sem PONG indevido ou pipe reutilizável |
 | M15 | `PENDENTE — DÍVIDA TÉCNICA ACEITA PELO MANTENEDOR` | validação manual externa | Finalidade: comprovar negação de acesso a outro usuário local; Justificativa: indisponibilidade de laboratório multi-conta no host; Risco residual: não validação direta contra outros usuários no mesmo SO; Quitação: execução em laboratório multi-usuário antes do Marco 1 |
 | M16 | `PENDENTE — DÍVIDA TÉCNICA ACEITA PELO MANTENEDOR` | validação manual externa | Finalidade: comprovar isolamento estrito ao LogonId do helper; Justificativa: ausência de sessões interativas/não-interativas secundárias no host; Risco residual: não verificação de processos paralelos em logon distinto do mesmo usuário; Quitação: execução em laboratório com LogonId distinto antes do Marco 1 |
 | M17 | `PENDENTE — DÍVIDA TÉCNICA ACEITA PELO MANTENEDOR` | validação manual externa | Finalidade: comprovar bloqueio de conexões SMB remotas reais via rede; Justificativa: indisponibilidade de máquina de teste secundária e rede isolada; Risco residual: confiar unicamente no teste local de loopback SMB `\\localhost\pipe`; Quitação: execução em laboratório multi-máquina na mesma sub-rede antes do Marco 1 |
-| M18 | `pass` | regressão | build/typecheck códigos `0`; 100 testes; fixtures íntegras; audit sem vulnerabilidades; gate antigo `blocked` código `2` |
+| M18 | `pass` | regressão | build/typecheck códigos `0`; 111 testes (34 do probe); fixtures íntegras; audit sem vulnerabilidades; gate antigo `blocked` código `2` |
 | M19 | `pass` | automação repetida | dez ciclos concluídos; reconexão ao nome exato falhou após cada encerramento |
 
 ## Dívidas técnicas aceitas e revisão de I/O
@@ -111,8 +111,19 @@ Falha de representação, identidade, excesso ou truncamento não produz respost
 ### Homologação externa postergada (M15–M17)
 O mantenedor decidiu adiar formalmente os testes M15, M16 e M17 devido à indisponibilidade do laboratório necessário neste momento (contas de teste secundárias, sessões de logon paralelas e máquinas remotas na rede). A aprovação dos testes locais (M01–M14, M18–M19) está formalmente separada da homologação externa. A POC-05B Etapa 2 permanece em `pending_validation` / `blocked`, não sendo considerada integralmente aprovada sem a quitação ou deliberação expressa sobre essas pendências.
 
-### Revisão técnica sobre segundos frames atrasados e CancelIoEx
-A inspeção com `PeekNamedPipe` detecta dados já presentes no buffer do kernel no momento da chamada, mas não oferece sincronização temporal caso o cliente transmita um segundo frame com atraso assíncrono após a primeira inspeção. Não foi incorporada automaticamente janela de leitura arbitrária (ex.: 35 ms) ao código nativo nesta prova para evitar introduzir latência fixa em todas as conexões e para permitir uma revisão minuciosa sobre potenciais condições de corrida entre o cancelamento de I/O via `CancelIoEx` e conclusões normais de I/O (`ERROR_OPERATION_ABORTED` vs `ERROR_SUCCESS`). Essa revisão permanece registrada como requisito de refinamento obrigatório para a implementação do `@argonauta/ipc`.
+### Refinamento de classificação de I/O após CancelIoEx
+A função `aguardarIoSobreposto` original classificava erroneamente como `TempoEsgotado` qualquer retorno de sucesso de `GetOverlappedResult` após a chamada a `CancelIoEx`, descartando bytes transferidos caso a I/O concluísse normalmente antes ou durante a solicitação de cancelamento. Além disso, erros de desconexão (`ERROR_BROKEN_PIPE` e `ERROR_NO_DATA`) após tentativa de cancelamento eram transformados em timeout.
+
+A correção implementou a separação limpa e pura em `classificacao-io.hpp`:
+1. **Sucesso da I/O (`Concluida`):** Se `GetOverlappedResult` retornar sucesso (mesmo após timeout / `CancelIoEx`), a operação é classificada como `Concluida`, preservando bytes transferidos.
+2. **Cancelamento Confirmado (`TempoEsgotado`):** Classificado exclusivamente quando `GetOverlappedResult` falha com `ERROR_OPERATION_ABORTED` após o timeout.
+3. **Desconexão do Cliente (`Desconectado`):** Erros `ERROR_BROKEN_PIPE` e `ERROR_NO_DATA` são classificados como `Desconectado` independentemente de ter ocorrido timeout.
+4. **Ciclo de Vida do OVERLAPPED:** Se a operação permanecer em `ERROR_IO_INCOMPLETE` após suposta conclusão, o processo encerra imediatamente (`ExitProcess(3)`) de forma fail-closed, impedindo a liberação de estruturas de pilha em uso pelo kernel.
+
+Foram adicionados 9 cenários nativos determinísticos (`classificacao-io.test.cpp` / `classificacao-io.test.exe`) e 2 testes de cancelamento em repetição na suíte do probe. **Ressalva obrigatória:** Os testes determinísticos da função de classificação comprovam a regra de decisão, mas não provam que a corrida temporal ocorreu espontaneamente na execução real com o kernel.
+
+### Revisão técnica sobre segundos frames atrasados e PeekNamedPipe
+A inspeção com `PeekNamedPipe` detecta dados já presentes no buffer do kernel no momento da chamada, mas não oferece sincronização temporal caso o cliente transmita um segundo frame com atraso assíncrono após a primeira inspeção. Não foi incorporada automaticamente janela de leitura arbitrária (ex.: 35 ms) ao código nativo nesta prova para evitar introduzir latência fixa em todas as conexões. Essa revisão permanece registrada como requisito de refinamento obrigatório para a implementação do `@argonauta/ipc`.
 
 ## Execução manual local, automação e revisão documental
 
@@ -128,7 +139,7 @@ npm run typecheck --workspace @argonauta/ipc-security-probe
 npm test --workspace @argonauta/ipc-security-probe
 ```
 
-Resultado específico do probe: 23 testes aprovados, 0 falhas. O build usa C++20, `/W4`, `/WX`, `/sdl`, `/GS`, `/guard:cf`, `/O2`, `/MT`, `/DYNAMICBASE`, `/NXCOMPAT` e `/HIGHENTROPYVA`.
+Resultado específico do probe: 34 testes aprovados (23 da suíte original, 9 de classificação de I/O, 2 de repetição de cancelamento), 0 falhas. O build usa C++20, `/W4`, `/WX`, `/sdl`, `/GS`, `/guard:cf`, `/O2`, `/MT`, `/DYNAMICBASE`, `/NXCOMPAT` e `/HIGHENTROPYVA`.
 
 Regressão completa observada:
 
@@ -136,7 +147,7 @@ Regressão completa observada:
 |---|---|
 | `npm run compilar` | `pass`, código `0` |
 | `npm run typecheck` | `pass`, código `0` |
-| `npm test` | `pass`, 100 testes e 0 falhas |
+| `npm test` | `pass`, 111 testes e 0 falhas |
 | `npm run verificar:fixtures` | `pass`, fixtures PING/PONG preservadas |
 | `npm audit --audit-level=high` | `pass`, 0 vulnerabilidades |
 | `npm run verificar:ipc-security-gate` | preservação `pass`: estado `blocked`, código esperado `2` |
