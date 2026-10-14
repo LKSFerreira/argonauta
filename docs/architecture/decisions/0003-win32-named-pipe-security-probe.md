@@ -2,7 +2,7 @@
 
 ## Status
 
-Proposta bloqueada por limitação do ambiente em 14/10/2026.
+Proposta com prova local em `pending_validation` em 14/10/2026. A limitação ambiental registrada originalmente foi removida, mas a adoção arquitetural continua sem aprovação.
 
 Esta ADR não substitui nem altera a reprovação registrada na ADR-0002. O servidor criado diretamente por `node:net` continua `blocked`. A decisão de adotar e distribuir um helper nativo ainda depende de aprovação arquitetural e de uma prova executável.
 
@@ -23,7 +23,7 @@ O ambiente não possui toolchain C/C++ Win32 compilável:
 
 Existe .NET Framework 4.8 com um compilador C# legado. Isso não equivale a um toolchain C++/Win32 e não foi usado como substituição silenciosa. Um sidecar gerenciado ou uma implementação por P/Invoke constitui decisão arquitetural separada.
 
-Sem compilador e SDK não foi possível construir ou executar o helper. Consequentemente, não foi possível comprovar nesta execução:
+Na investigação original, sem compilador e SDK, não foi possível construir ou executar o helper. Consequentemente, naquela execução não foi possível comprovar:
 
 - criação segura desde o primeiro handle;
 - DACL efetiva restrita ao SID de logon;
@@ -31,7 +31,34 @@ Sem compilador e SDK não foi possível construir ou executar o helper. Conseque
 - rejeição de `\\localhost\pipe\...` pelo helper;
 - comportamento de squatting, concorrência e encerramento do helper.
 
-A condição de parada foi atingida. Nenhum código ou diretório vazio foi criado em `tools/ipc-security-probe/`.
+A condição de parada daquela investigação foi atingida. Nenhum código ou diretório vazio foi criado naquele momento em `tools/ipc-security-probe/`.
+
+## Adendo da prova executável — 14/10/2026
+
+Após a instalação e validação manual do MSVC/Windows SDK pelo mantenedor, foi autorizada e executada uma prova isolada em `tools/ipc-security-probe/`. O histórico de reprovação do servidor `node:net` da ADR-0002 permanece inalterado.
+
+A prova confirmou localmente:
+
+- criação protegida no primeiro `CreateNamedPipeW`, sem mutação posterior da DACL;
+- DACL presente, não nula e protegida, com uma única ACE explícita para o SID de logon;
+- política de owner e group: owner igual ao `TokenOwner` do processo criador e group igual ao `TokenPrimaryGroup`; essas identidades não são ACEs de acesso;
+- handle não herdável, instância única, `FILE_FLAG_FIRST_PIPE_INSTANCE`, `FILE_FLAG_OVERLAPPED` e `PIPE_REJECT_REMOTE_CLIENTS`;
+- rejeição do caminho `\\localhost\pipe`, squatting e instâncias concorrentes;
+- troca local com cliente Node.js independente somente após leitura limitada, representação, comparação do SID de logon e `RevertToSelf`;
+- timeouts e cancelamento de operações overlapped com coleta da conclusão.
+
+A medição de acesso corrigiu a hipótese de que o cliente Node exigiria toda a `FILE_GENERIC_WRITE`. A máscara ampla `0x0012019F` contém `READ_CONTROL` e o bit compartilhado por `FILE_APPEND_DATA`/`FILE_CREATE_PIPE_INSTANCE`, portanto foi mantida como `blocked`. O cliente `node:net` concluiu o fluxo com a máscara específica `0x0010019B`:
+
+```text
+FILE_READ_DATA | FILE_WRITE_DATA |
+FILE_READ_EA | FILE_WRITE_EA |
+FILE_READ_ATTRIBUTES | FILE_WRITE_ATTRIBUTES |
+SYNCHRONIZE
+```
+
+Testes removeram individualmente cada direito dessa máscara e observaram rejeição do cliente. Assim, ela é a máscara mínima comprovada para o runtime testado e não inclui `FILE_CREATE_PIPE_INSTANCE`, `READ_CONTROL`, `WRITE_DAC`, `WRITE_OWNER`, `DELETE` ou controle total.
+
+M01–M14 e M19 foram automatizados localmente. M15, M16 e M17 continuam pendentes por exigirem outra conta, outra sessão/logon e outra máquina reais. A prova não altera esta ADR para `accepted`, não conclui a Etapa 2 e não autoriza Etapa 3.
 
 ## Arquitetura candidata
 
@@ -88,11 +115,11 @@ Logo após `CreateNamedPipeW` e antes de sinalizar prontidão, o próprio helper
 - confirmar com `GetHandleInformation` que o handle não é herdável;
 - fechar o handle e retornar `blocked` diante de qualquer divergência.
 
-Após a conexão, `ImpersonateNamedPipeClient` pode reforçar o gate: o helper abre o token da thread, extrai o SID de logon do cliente e o compara ao SID autorizado antes de ler `PING_GATE`. `RevertToSelf` deve ser executado em todos os caminhos.
+Após a conexão, o helper lê somente um frame diagnóstico limitado a 64 bytes e ainda não autorizado. Em seguida, `ImpersonateNamedPipeClient` representa o contexto da última mensagem lida; o helper abre o token da thread, extrai o SID de logon do cliente, compara-o ao SID autorizado e executa `RevertToSelf` em todos os caminhos. Somente depois dessa sequência o payload pode ser aceito e uma resposta pode ser enviada.
 
 ### Ciclo de vida e protocolo diagnóstico
 
-`ConnectNamedPipe`, `ReadFile` e `WriteFile` devem usar I/O overlapped, eventos próprios, timeout e `CancelIoEx`. Handles devem ser encapsulados com RAII. O helper aceita uma única mensagem de até 64 bytes, exatamente `PING_GATE`, e responde somente `PONG_GATE`. Entrada diferente, truncada, excessiva, segundo cliente ou timeout encerra a conexão sem conteúdo funcional.
+`ConnectNamedPipe`, `ReadFile` e `WriteFile` devem usar I/O overlapped, eventos próprios, timeout e `CancelIoEx`. Handles devem ser encapsulados com RAII. O helper aceita um frame diagnóstico exclusivo, com comprimento de um byte e payload máximo de 64 bytes, exatamente `PING_GATE`, e responde somente `PONG_GATE`. Uma confirmação interna de um byte após o recebimento do PONG permite encerramento finito sem `FlushFileBuffers` bloqueante. Entrada diferente, truncada, excessiva, lote adicional, segundo cliente ou timeout encerra a conexão sem conteúdo funcional.
 
 `PONG_GATE` é uma constante diagnóstica, não um contrato funcional nem um segredo. Nenhuma mensagem do protocolo `1.0`, dado do workspace, Chrome, Registro ou autenticação HMAC pertence a esta prova.
 
@@ -147,7 +174,7 @@ Não recomendado para esta prova. Aumentaria o acoplamento com ABI/build do Node
 
 ## Recomendação
 
-A arquitetura candidata é o sidecar Win32 nativo mínimo, não um addon. Essa recomendação permanece `proposed`, pois não existe evidência executada do helper.
+A arquitetura candidata continua sendo o sidecar Win32 nativo mínimo, não um addon. Essa recomendação permanece `proposed`: existe evidência local do helper, mas faltam os testes externos e a decisão expressa do mantenedor.
 
 Para retomar, o mantenedor precisa aprovar uma destas opções:
 
@@ -166,4 +193,3 @@ Mesmo após uma prova local positiva, a POC-05B Etapa 2 deve permanecer `pending
 - [Microsoft — TOKEN_GROUPS e SE_GROUP_LOGON_ID](https://learn.microsoft.com/windows/win32/api/winnt/ns-winnt-token_groups)
 - [Microsoft — NamedPipeServerStreamAcl.Create](https://learn.microsoft.com/dotnet/api/system.io.pipes.namedpipeserverstreamacl.create)
 - [Microsoft — publicação de aplicações .NET](https://learn.microsoft.com/dotnet/core/deploying/)
-

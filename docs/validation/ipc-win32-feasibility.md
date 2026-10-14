@@ -1,5 +1,7 @@
 # Investigação de viabilidade — helper Win32 para o gate IPC
 
+> **Nota histórica:** este relatório registra a investigação anterior à instalação do toolchain. A prova executável posterior está em [Validação do probe de segurança Win32](ipc-win32-security-probe.md). A reprovação histórica do servidor `node:net` permanece válida.
+
 ## Resultado
 
 **Estado:** `blocked` em 14/10/2026 por ausência de toolchain C/C++ Win32 e Windows SDK no ambiente autorizado.
