@@ -1,8 +1,60 @@
-# Auto detect text files and perform LF normalization
-* text=auto
+# -----------------------------------------------------------------------------
+# Argonauta - Configuração de Finais de Linha (.gitattributes)
+# Padrão da comunidade para compatibilidade multiplataforma (Linux, Windows, macOS, CI)
+# -----------------------------------------------------------------------------
 
-# Force shell scripts to always use LF (Unix) line endings
+# Regra padrão: autodetecta arquivos de texto e normaliza com LF no checkout e commit
+* text=auto eol=lf
+
+# -----------------------------------------------------------------------------
+# Código-fonte, Documentação e Configuração (forçado LF)
+# -----------------------------------------------------------------------------
+*.ts text eol=lf
+*.tsx text eol=lf
+*.js text eol=lf
+*.jsx text eol=lf
+*.mjs text eol=lf
+*.cjs text eol=lf
+*.json text eol=lf
+*.jsonc text eol=lf
+*.html text eol=lf
+*.css text eol=lf
+*.scss text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+*.md text eol=lf
+*.txt text eol=lf
+
+# -----------------------------------------------------------------------------
+# Scripts e Utilitários de Shell / CLI
+# -----------------------------------------------------------------------------
+# Scripts POSIX/Unix DEVEM ser LF para não quebrar a execução em Linux/macOS
 *.sh text eol=lf
 
-# Markdown docs must stay normalized and UTF-8 in working tree
-*.md text eol=lf working-tree-encoding=UTF-8
+# Scripts PowerShell modernos funcionam perfeitamente com LF
+*.ps1 text eol=lf
+
+# Scripts Batch do Windows tradicionalmente requerem CRLF
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# -----------------------------------------------------------------------------
+# Arquivos Binários (nunca alterar quebras de linha ou caracteres)
+# -----------------------------------------------------------------------------
+*.bin binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
+*.pdf binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary
+*.zip binary
+*.tar.gz binary
+*.tgz binary
+*.wasm binary
+
