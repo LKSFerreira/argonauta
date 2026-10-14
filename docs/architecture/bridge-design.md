@@ -477,6 +477,8 @@ Todo o trabalho será realizado e depurado no Antigravity IDE. O VS Code não se
 - provar por testes negativos o bloqueio de clientes não autorizados e de acesso remoto;
 - não implementar fallback TCP.
 
+**Resultado do gate em 14/10/2026:** `blocked`. No runtime Node.js `v24.16.0`/libuv `1.52.1`, `node:net` comprovou comunicação duplex, mas criou uma DACL com leitura para `Everyone` e `Anonymous` e aceitou acesso por `\\localhost\pipe`. Como a API pública não permite fornecer `SECURITY_ATTRIBUTES` nem `PIPE_REJECT_REMOTE_CLIENTS`, a biblioteca IPC e o harness não foram implementados. Consulte [ADR-0002](decisions/0002-node-net-security-gate.md) e o [relatório de validação](../validation/ipc-transport.md).
+
 ### Etapa 3 — Autenticação
 
 - criar configuração local com ACL restrita mediante script manual;

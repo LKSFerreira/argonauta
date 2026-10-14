@@ -13,7 +13,7 @@ packages/protocol   tools/native-messaging-smoke
       ▲
       │ contratos futuros
       │
-apps/* e packages/ipc  (ainda não implementados)
+apps/* e packages/ipc  (ainda não implementados; IPC bloqueado pelo gate de segurança)
 ```
 
 ## Componentes
@@ -44,5 +44,12 @@ Valida a compatibilidade binária entre o pacote de protocolo e a implementaçã
 ## Decisões
 
 - [ADR-0001 — Arquitetura do monorepo TypeScript](decisions/0001-monorepo-architecture.md)
+- [ADR-0002 — Gate de segurança do Windows Named Pipe com `node:net`](decisions/0002-node-net-security-gate.md)
 - [Plano de migração](repository-migration-plan.md)
 - [Desenho da ponte futura](bridge-design.md)
+
+## Gate atual do transporte IPC
+
+O transporte básico por Windows Named Pipe foi comprovado com `node:net`, mas a DACL efetiva permaneceu legível por `Everyone` e `Anonymous`, e uma conexão pelo namespace `\\localhost\pipe` foi aceita. A API pública avaliada não expõe a criação com descritor de segurança explícito nem `PIPE_REJECT_REMOTE_CLIENTS`.
+
+Por isso, `packages/ipc`, o harness e o comando da IDE não foram implementados. Consulte o [relatório do gate](../validation/ipc-transport.md).

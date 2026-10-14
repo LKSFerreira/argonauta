@@ -16,6 +16,7 @@
 | Bytes recebidos | Framing incremental, tamanho, lote e UTF-8 estritos. |
 | Extensão Chrome → host local | Origem exata, operação PING fechada e stdio. |
 | Antigravity IDE → recursos seguros | Timeouts, cancelamento, limpeza e relatório sanitizado. |
+| IDE → Windows Named Pipe | Gate bloqueado: DACL padrão e acesso remoto de `node:net` não atendem ao isolamento exigido. |
 | Scripts Windows → Registro | Execução manual, confirmação textual e escopo `HKCU`. |
 
 ## Ameaças controladas
@@ -30,11 +31,12 @@
 
 ## Riscos residuais
 
-- O ACL de Windows Named Pipe ainda não foi implementado nem validado; pertence à futura Etapa 2.
+- A DACL do pipe temporário criado por `node:net` foi inspecionada e reprovada: `Everyone` e `Anonymous` possuem leitura, o SID de logon não aparece e `\\localhost\pipe` consegue conectar.
+- Uma solução segura exige criação com descritor explícito e bloqueio remoto desde o primeiro handle; a alternativa técnica ainda depende de aprovação.
 - O host da POC-05A depende do `node.exe` disponível no `PATH` herdado pelo Chrome.
 - Uma instalação registrada deixa de funcionar quando o repositório é movido, até reinstalação manual.
 - Testes automatizados não substituem a validação real no Antigravity IDE e no Chrome.
 
 ## Fora do escopo
 
-Gemini Web, cookies, sessões Google, autenticação HMAC e Named Pipes não são acessados ou implementados nesta etapa.
+Gemini Web, cookies, sessões Google e autenticação HMAC não são acessados ou implementados nesta etapa. O Named Pipe foi criado apenas de forma efêmera para o gate, sem mensagens funcionais ou processo residente.
