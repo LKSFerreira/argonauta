@@ -1,6 +1,6 @@
 import { types as tiposUtil } from 'node:util';
 
-import { falhar } from './erros.js';
+import { falhar } from './errors.js';
 
 export const LIMITE_PROFUNDIDADE_JSON = 64;
 

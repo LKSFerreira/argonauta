@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { ErroProtocolo, type CodigoErroProtocolo } from '../src/erros.js';
-import { CODIGOS_ERRO_MENSAGEM } from '../src/tipos.js';
-import { validarMensagem } from '../src/validacao.js';
+import { ErroProtocolo, type CodigoErroProtocolo } from '../src/errors.js';
+import { CODIGOS_ERRO_MENSAGEM } from '../src/types.js';
+import { validarMensagem } from '../src/validation.js';
 
 const ID = 'requisicao-01';
 const ID_SESSAO = 'sessao-01';

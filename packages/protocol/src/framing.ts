@@ -1,6 +1,6 @@
-import { ErroProtocolo, falhar } from './erros.js';
-import { validarEstruturaJsonPassiva } from './estrutura-json.js';
-import { LIMITE_PAYLOAD_CONTRATO } from './tipos.js';
+import { ErroProtocolo, falhar } from './errors.js';
+import { validarEstruturaJsonPassiva } from './json-structure.js';
+import { LIMITE_PAYLOAD_CONTRATO } from './types.js';
 
 export type OrdemBytes = 'LE' | 'BE';
 export const LIMITE_FRAGMENTO_PADRAO = LIMITE_PAYLOAD_CONTRATO + 4;

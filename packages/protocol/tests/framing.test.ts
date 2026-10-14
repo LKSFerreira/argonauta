@@ -6,8 +6,8 @@ import {
   LIMITE_FRAGMENTO_PADRAO,
   LIMITE_MENSAGENS_POR_ADICAO,
   serializarEnquadramento
-} from '../src/enquadramento.js';
-import { ErroProtocolo, type CodigoErroProtocolo } from '../src/erros.js';
+} from '../src/framing.js';
+import { ErroProtocolo, type CodigoErroProtocolo } from '../src/errors.js';
 
 function esperarCodigo(codigo: CodigoErroProtocolo, operacao: () => unknown): void {
   assert.throws(operacao, (erro: unknown) => {

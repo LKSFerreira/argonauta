@@ -1,12 +1,12 @@
-import { falhar } from './erros.js';
-import { validarEstruturaJsonPassiva } from './estrutura-json.js';
+import { falhar } from './errors.js';
+import { validarEstruturaJsonPassiva } from './json-structure.js';
 import {
   CODIGOS_ERRO_MENSAGEM,
   LIMITE_IDENTIFICADOR,
   LIMITE_PAYLOAD_CONTRATO,
   type MensagemPoc05B,
   VERSAO_PROTOCOLO
-} from './tipos.js';
+} from './types.js';
 
 type ObjetoDesconhecido = Readonly<Record<string, unknown>>;
 

@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { ErroProtocolo } from '../src/erros.js';
-import { LIMITE_PROFUNDIDADE_JSON } from '../src/estrutura-json.js';
-import { validarMensagem } from '../src/validacao.js';
+import { ErroProtocolo } from '../src/errors.js';
+import { LIMITE_PROFUNDIDADE_JSON } from '../src/json-structure.js';
+import { validarMensagem } from '../src/validation.js';
 
 const MENSAGEM_VALIDA = {
   tipo: 'DESAFIO_AUTENTICACAO',
