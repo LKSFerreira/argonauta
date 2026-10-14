@@ -8,6 +8,7 @@ Este diretório reúne validações que dependem de interação com aplicações
 |---|---|---|
 | [Chrome Native Messaging](chrome-native-messaging.md) | Confirmar o fluxo Chrome → Native Host → Chrome e a resposta PONG. | `pass` em 14/10/2026 |
 | [Antigravity IDE](antigravity-compatibility.md) | Confirmar o carregamento da extensão e as APIs públicas necessárias. | `pass` em 14/10/2026 |
+| [Toolchain Win32](win32-toolchain-installation.md) | Confirmar MSVC C++, Windows SDK e compilação nativa segura no host. | `pass` em 14/10/2026 |
 
 ## Regras para registrar evidências
 
