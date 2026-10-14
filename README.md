@@ -18,13 +18,13 @@
 </div>
 
 > [!WARNING]
-> **Argonauta is in discovery.** There is no installable extension, validated Gemini Web integration, or autonomous agent at this stage. The project will only claim capabilities that are real, reproducible, secure, and allowed.
+> **Argonauta is transitioning from initial discovery to extension implementation.** The active priority is implementing the real IDE extension in `apps/ide-extension/`, centered on an agentic experience and an installable `.vsix` package. Direct connection to a model provider is an explicit external dependency; Gemini Web integration remains an unproven hypothesis.
 
 ## ✨ About
 
-Argonauta is an independent extension project designed first for **Antigravity IDE**. Its initial goal is to make a safer, more deliberate workflow possible: select code, review the context that may be shared, hand off a prompt to an AI experience, import a response, and review a patch before applying it.
+Argonauta is an independent extension project designed first for **Antigravity IDE**. Its goal is to provide a complete agentic coding experience directly within the IDE: a dedicated Activity Bar icon, integrated chat/agent panel, local context curation, plan tracking, authorized tool execution, and diff-based patch review before changes touch the workspace.
 
-The first release target is **Web Assisted**, not autonomous web automation. Gemini Web remains separate from the extension and is used through the user’s normal, legitimate session. Future support for VS Code or an official API-backed agent depends on tested host capabilities, public APIs, and applicable terms.
+The delivery priority is the real extension package (`.vsix`) in `apps/ide-extension/`, usable through the IDE interface. Connecting to a real model is treated as an explicit, decoupled dependency without simulating fake agents or mock chats. The **Web Assisted** mode is maintained as an explicit manual context-and-response handoff fallback when direct model connection is unavailable, rather than as a substitute for the agentic extension itself.
 
 ## 🛡️ Non-negotiable principles
 
@@ -67,7 +67,7 @@ Developers and contributors can follow the exact construction of the application
 
 ## 🧱 Repository structure
 
-- `apps/` — distributable applications, created only after product approval.
+- `apps/` — distributable applications, starting with the core IDE extension (`apps/ide-extension/`).
 - `packages/` — reusable libraries with explicit dependencies.
 - `tools/` — compatibility probes and reproducible technical validations.
 - `tests/` — cross-project integration tests and shared fixtures.
@@ -89,7 +89,7 @@ The automated baseline contains 77 tests. Chrome and Antigravity interactions re
 
 ## 🤝 Using and contributing
 
-There is no production extension to install yet. Read [CONTRIBUTING.md](CONTRIBUTING.md) before proposing changes. Until the discovery gates are documented, the most valuable contribution is careful, reproducible evidence about supported hosts and public APIs.
+The current focus is building and validating the installable `.vsix` package in `apps/ide-extension/`. Generating a local `.vsix` is a concrete technical delivery, whereas public marketplace release (Open VSX / VS Code Marketplace) requires subsequent publisher identity, licensing, and platform homologation. Read [CONTRIBUTING.md](CONTRIBUTING.md) before proposing changes.
 
 Please do not build or propose integrations based on cookie extraction, private endpoints, browser profile access, DOM scraping, or attempts to bypass provider controls. Those approaches are outside the project’s scope.
 
@@ -113,13 +113,13 @@ Argonauta is an independent open-source project and is not affiliated with, endo
 </div>
 
 > [!WARNING]
-> **O Argonauta está em discovery.** Ainda não existe extensão instalável, integração validada com o Gemini Web ou agente autônomo. O projeto só comunicará capacidades reais, reproduzíveis, seguras e permitidas.
+> **O Argonauta está em transição do discovery para a implementação da extensão.** A prioridade ativa é a construção da extensão real em `apps/ide-extension/`, centrada em uma experiência agêntica e em um pacote `.vsix` instalável. A conexão direta com um provedor de modelo é uma dependência externa explícita; a integração com o Gemini Web permanece como uma hipótese não comprovada.
 
 ## ✨ Sobre
 
-O Argonauta é um projeto de extensão independente, pensado primeiro para o **Antigravity IDE**. Seu objetivo inicial é viabilizar um fluxo mais seguro e deliberado: selecionar código, revisar o contexto que poderá ser compartilhado, transferir um prompt para uma experiência de IA, importar a resposta e revisar um patch antes de aplicá-lo.
+O Argonauta é um projeto de extensão independente, concebido primeiro para o **Antigravity IDE**. Seu objetivo é fornecer uma experiência agêntica completa de programação integrada à interface da IDE: ícone próprio na Activity Bar, painel integrado de agente/chat, curadoria local de contexto, acompanhamento de planos, execução de ferramentas autorizadas e revisão de alterações em formato diff antes de qualquer modificação no workspace.
 
-O alvo da primeira versão é o modo **Web Assistido**, não a automação autônoma da web. O Gemini Web permanece separado da extensão e é usado pela sessão normal e legítima do usuário. O suporte futuro ao VS Code ou a um agente por API oficial depende de capacidades testadas do host, APIs públicas e termos aplicáveis.
+A prioridade de entrega é a implementação da extensão real (`apps/ide-extension/`) empacotada em `.vsix` instalável pela interface da IDE. A conexão efetiva com um provedor de inferência é tratada como dependência explícita e desacoplada, sem simulações cosméticas de agente. O modo **Web Assistido** permanece como um fallback manual seguro para transferência de contexto e respostas quando não houver conexão direta com modelos, e não como teto ou definição limitante do produto.
 
 ## 🛡️ Princípios inegociáveis
 
@@ -161,7 +161,7 @@ Qualquer desenvolvedor pode acompanhar detalhadamente **como a aplicação está
 
 ## 🧱 Estrutura do repositório
 
-- `apps/` — aplicações distribuíveis, criadas somente após aprovação de produto.
+- `apps/` — aplicações distribuíveis, iniciando pela extensão principal da IDE (`apps/ide-extension/`).
 - `packages/` — bibliotecas reutilizáveis com dependências explícitas.
 - `tools/` — probes de compatibilidade e validações técnicas reproduzíveis.
 - `tests/` — testes de integração entre projetos e fixtures compartilhadas.
@@ -183,7 +183,7 @@ A linha de base automatizada contém 77 testes. As interações com Chrome e Ant
 
 ## 🤝 Uso e contribuições
 
-Ainda não há extensão de produção disponível para instalação. Leia [CONTRIBUTING.md](CONTRIBUTING.md) antes de propor alterações. Até que os gates de discovery sejam documentados, a contribuição mais valiosa é produzir evidências cuidadosas e reproduzíveis sobre hosts compatíveis e APIs públicas.
+O foco imediato de implementação é a construção e validação do pacote `.vsix` em `apps/ide-extension/`. A geração do `.vsix` instalável é uma entrega técnica concreta, enquanto a publicação oficial em lojas (Open VSX / Visual Studio Marketplace) exige etapas posteriores de titularidade, identidade de publicador e homologação. Leia [CONTRIBUTING.md](CONTRIBUTING.md) antes de propor alterações.
 
 Não implemente nem proponha integrações baseadas em extração de cookies, endpoints privados, acesso a perfis de navegador, DOM scraping ou tentativas de contornar controles de provedores. Essas abordagens estão fora do escopo do projeto.
 

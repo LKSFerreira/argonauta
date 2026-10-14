@@ -2,7 +2,7 @@
 
 ## Estado atual
 
-O repositório separa código reutilizável de ferramentas de validação. As aplicações definitivas ainda não existem e não são simuladas por diretórios vazios.
+O repositório separa código reutilizável de ferramentas de validação e aplicações em `apps/`. O foco de aplicação ativa é a extensão real em `apps/ide-extension/` (painel na Activity Bar, núcleo de agente e pacote `.vsix`), enquanto pontes IPC permanecem como trilhas condicionais.
 
 ```text
 tests/integration
@@ -11,9 +11,9 @@ tests/integration
       ▼              ▼
 packages/protocol   tools/native-messaging-smoke
       ▲
-      │ contratos futuros
+      │ consome contratos
       │
-apps/* e packages/ipc  (ainda não implementados; IPC bloqueado pelo gate de segurança)
+apps/ide-extension  (em implementação; pacote .vsix e núcleo de agente)
 ```
 
 ## Componentes

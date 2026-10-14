@@ -56,4 +56,4 @@ Testes manuais devem informar versão, sistema operacional, data e resultado `pa
 
 ## Escopo atual
 
-Named Pipes, autenticação HMAC, automação do Gemini Web e aplicações definitivas não fazem parte desta refatoração. Consulte [ROADMAP.md](ROADMAP.md) antes de iniciar uma nova frente.
+A frente prioritária é a implementação da extensão real em `apps/ide-extension/`, orientada a uma experiência agêntica integrada na IDE e ao empacotamento em pacote `.vsix` instalável. Named Pipes adicionais, autenticação HMAC da ponte e automação autônoma do Gemini Web continuam fora do escopo imediato. Consulte [ROADMAP.md](ROADMAP.md) antes de iniciar uma nova frente.

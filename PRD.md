@@ -21,7 +21,7 @@ O Argonauta deverá diferenciar permanentemente:
 
 1. **Visão final:** agente de programação completo e centrado na IDE, independente do provedor.
 2. **Motivação e hipótese prioritária:** viabilizar a experiência com Gemini Web/Argon, focando o desenvolvimento na solidez técnica e segurança da ferramenta, sem impor limites no desenvolvimento por restrições contratuais externas, cabendo ao usuário a ciência e responsabilidade pelos riscos.
-3. **Primeira entrega funcional:** MVP Web Assistido, com troca deliberada de contexto/respostas, sem automação simulada.
+3. **Primeira entrega funcional:** Extensão real em `apps/ide-extension/` com núcleo agêntico, ícone na Activity Bar, painel integrado, ferramentas autorizadas, revisão de edições e pacote `.vsix` instalável pela interface da IDE. A conexão com modelos é uma dependência explícita (com fallback manual no modo Web Assistido quando não houver provedor direto conectado), sem promessas não comprovadas de automação.
 4. **Alternativa programática:** agente por API oficial, com chave, condições de acesso e custos próprios, sem presumir direitos derivados do Google AI Pro.
 5. **Infraestrutura de pesquisa:** POCs, Named Pipes, Chrome Native Messaging e contratos. São meios técnicos, não substitutos das capacidades do produto.
 
@@ -431,13 +431,13 @@ A taxonomia do `ROADMAP.md` é a referência operacional: **M0–M5**, **T01–T
 | Marco | Resultado de produto | Dependência e estado |
 |---|---|---|
 | **M0 — Foundation & Discovery** | Fundação, host, hipóteses, POCs e decisões | Em progresso; POC-05B bloqueada sem impedir M1 |
-| **M1 — Web Assisted MVP** | **Primeiro aplicativo real** com Activity Bar, painel, contexto, prompt, importação e diff | Planejado; não depende de G3 |
-| **M2 — Beta open source** | Segurança, acessibilidade, testes, VSIX, documentação e experiência refinada | Depende do MVP |
+| **M1 — Extensão Agêntica Real & VSIX** | **Primeiro aplicativo real** em `apps/ide-extension/` com Activity Bar, painel integrado, núcleo de agente, ferramentas autorizadas, revisão de diff e pacote `.vsix` instalável; inclui fallback manual Web Assisted | Planejado; não depende de G3 |
+| **M2 — Beta open source** | Segurança, acessibilidade, testes E2E, documentação e experiência refinada | Depende de M1 |
 | **M3 — Official API Agent** | Agente verdadeiro com API oficial, BYOK e ferramentas autorizadas | Condicional a capacidades, acesso e G4 |
 | **M4 — Web Bridge** | Integração legítima com experiência web e possível agência sobre ela | Exige G3-T + G3-W e G4 para agent loop |
-| **M5 — Publicação e manutenção** | Releases transparentes, governança e lojas suportadas | Exige G5; Open VSX é alvo inicial |
+| **M5 — Publicação e manutenção** | Releases transparentes, governança e publicação formal em lojas homologadas (Open VSX/Marketplace) | Exige G5, licença e publisher formalizados |
 
-**Ordem de valor:** estabilizar a fundação necessária e iniciar M1 (T04–T06), enquanto T03/POC-05B e a avaliação G3-W prosseguem como trilhas de risco separadas. **Não equiparar bloqueio de IPC a bloqueio do produto.**
+**Ordem de valor:** consolidar a fundação e focar na implementação da extensão real M1 em `apps/ide-extension/` (T04–T06), tratando provedores externos como dependências desacopladas, enquanto T03/POC-05B e a avaliação G3-W prosseguem como trilhas de risco separadas. **Não equiparar bloqueio de IPC a bloqueio do produto.** A geração do `.vsix` instalável é entrega técnica de M1; a publicação em lojas pertence a M5.
 
 ## 15. Comunicação, transparência e lançamento
 

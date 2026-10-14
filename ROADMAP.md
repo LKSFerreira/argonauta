@@ -58,11 +58,12 @@ A motivação inicial foi a diferença observada entre a disponibilidade do mode
 - Compatibilidade com VS Code, Linux e macOS **não é presumida**, somente anunciada após testes próprios.
 - Distribuição planejada: **Open VSX primeiro**, Visual Studio Marketplace somente após homologação real e análise das respectivas políticas.
 
-### 1.3 Três modos de produto, com promessas separadas
+### 1.3 Modos de produto e arquitetura da extensão
 
-| Modo | O que entrega | Fronteira de honestidade | Marco |
+| Modo / Componente | O que entrega | Fronteira de honestidade | Marco |
 |---|---|---|---|
-| **Web Assisted** | Seleção de contexto, revisão, preparação/cópia de prompt, abertura do navegador legítimo, importação explícita de resposta e revisão de diff. | Não afirma streaming, leitura da página, sincronização automática nem agent loop web. | M1, amadurecido em M2 |
+| **Núcleo Agêntico / Extensão Real** | Experiência integrada na IDE: ícone na Activity Bar, painel próprio, núcleo de agente local, ferramentas autorizadas, revisão de patches e empacotamento em `.vsix` instalável. | Conexão com modelo é dependência desacoplada. Não simula IA com chat falso. | M1, consolidado em M2 |
+| **Web Assisted (Fallback Manual)** | Fallback de contexto: seleção, curadoria, cópia de prompt, abertura do navegador legítimo, importação de resposta e revisão de diff quando não houver modelo conectado. | Não afirma streaming, leitura da página, sincronização automática nem agent loop web. | M1 (fallback), amadurecido em M2 |
 | **Official API Agent** | Backend de API pública/documentada, chave própria do usuário, streaming/tool calling quando disponíveis, ferramentas sujeitas a autorização. | Google AI Pro não é tratado como licença ou faturamento da Gemini API. | M3, condicional |
 | **Web Bridge** | Comunicação IDE ↔ Chrome e possível integração bidirecional com experiência web, **somente se pública e permitida**. | Uma ponte IPC funcional não autoriza acesso ao Gemini Web. Nenhum cookie/token/sessão extraído. | M4, condicional |
 
@@ -86,13 +87,13 @@ Estes identificadores são **permanentes**; não renumerar os marcos a cada spri
 | Marco | Entrega de valor | Estado em 14/10/2026 | Gate fundamental | Pode ocorrer em paralelo? |
 |---|---|---|---|---|
 | **M0 — Foundation & Discovery** | Base de engenharia, entendimento do host, POCs, contrato, riscos e decisões. | `in_progress`; infraestrutura validada, POC-05B ainda incompleta. | G0; decisões específicas por POC. | Sim, com planejamento do M1. |
-| **M1 — Web Assisted MVP** | Extensão útil no Antigravity sem automação web: contexto → prompt → resposta → diff. | `planned` | G1 em nível compatível com o fluxo escolhido; G2 para concluir. | **Sim. Não depende de POC-05B ou G3.** |
-| **M2 — Open-source Beta** | Usabilidade, testes, segurança, empacotamento e validação com usuários. | `planned` | MVP funcional e requisitos de beta. | Preparação pode começar durante M1. |
+| **M1 — Extensão Agêntica Real & VSIX** | Implementação da extensão real em `apps/ide-extension/` (Activity Bar, painel integrado, núcleo de agente, ferramentas autorizadas, revisão de diff e empacotamento `.vsix` instalável); inclui fallback manual Web Assisted. | `planned` | G1/G2; não depende de G3 ou da ponte IPC. | **Sim. Não depende de POC-05B ou G3.** |
+| **M2 — Open-source Beta** | Usabilidade, testes, segurança, empacotamento refinado e validação com usuários. | `planned` | MVP agêntico funcional e requisitos de beta. | Preparação pode começar durante M1. |
 | **M3 — Official API Agent** | Provedor oficial, chaves próprias, streaming, ferramentas autorizadas. | `conditional` | Documentação/API/conta/faturamento legítimos; G4 para autonomia. | Trilha paralela pós-núcleo do produto. |
 | **M4 — Web Bridge** | Ponte contínua **e** integração web funcionalmente viável (usuário ciente dos riscos). | `conditional`, alto risco | **G3 técnico + G3 web (viabilidade e estabilidade)**; G4 se houver agent loop. | Pesquisa de viabilidade pode ser paralela, implementação é condicionada. |
-| **M5 — Publicação e manutenção** | Identidade/licença, releases, Open VSX, suporte e governança. | `planned` | G5 e homologação da plataforma anunciada. | Preparação antecipada; publicação após critérios. |
+| **M5 — Publicação e manutenção** | Identidade/licença, releases, publicação formal em lojas (Open VSX/Marketplace) e governança. | `planned` | G5 e homologação da plataforma anunciada. | Preparação antecipada; publicação após critérios. |
 
-**Sequência mínima de valor:** M0 (fundação suficiente) → M1 → M2 → M5 (lançamento do modo Web Assisted). M3 e M4 são caminhos **opcionais/condicionais**, e **não** barreiras para lançar o Web Assisted.
+**Sequência mínima de valor:** M0 (fundação suficiente) → M1 (extensão agêntica real em `apps/ide-extension/` com pacote `.vsix` instalável e fallback assistido) → M2 → M5 (publicação formal em lojas após resolução de licença e identidade de publicador). M3 e M4 são caminhos **opcionais/condicionais** para provedores de modelo, e o empacotamento do `.vsix` é uma entrega técnica prévia e independente da publicação em lojas.
 
 ---
 
@@ -230,22 +231,24 @@ Nenhuma POC autoriza leitura de DOM, cookies, sessões do Google, comando de she
 
 ---
 
-## 6. M1 — MVP Web Assisted: primeira experiência realmente utilizável (T04, T05, T06)
+## 6. M1 — Extensão Agêntica Real no Antigravity e Pacote VSIX (T04, T05, T06)
 
-**Estado:** `planned`. **Não requer aprovação de G3 nem conclusão da POC-05B.**
+**Estado:** `planned`. Prioridade imediata de implementação em `apps/ide-extension/`. **Não requer aprovação de G3 nem conclusão da POC-05B.**
 
-### 6.1 Núcleo e painel da IDE — T04
+### 6.1 Núcleo agêntico e painel da IDE (`apps/ide-extension/`) — T04
 
-- [ ] Criar `apps/ide-extension/` **quando a extensão real for implementada**. Não converter `tools/compatibility-probe` em produto por renomeação cosmética.
+- [ ] Iniciar a implementação da extensão real em `apps/ide-extension/`, orientada a uma experiência agêntica e com scripts de empacotamento para gerar `.vsix` instalável via UI da IDE. Não converter `tools/compatibility-probe` em produto por renomeação cosmética.
+- [ ] Contribuir ícone próprio do Argonauta na Activity Bar lateral e registrar Custom View / WebviewView para o painel principal.
+- [ ] Implementar o núcleo de agente local (agent core: controle de estado, fila de etapas, loop de planejamento e cancelamento gracioso).
+- [ ] Orquestrar ferramentas locais autorizadas (inspeção de arquivos, diffs, terminal sob aprovação humana estrita).
 - [ ] Detectar capacidades reais do Antigravity, Workspace Trust, lifecycle e modo local/remoto.
-- [ ] `Argonauta: Open` abre painel próprio, estado vazio e navegação básica.
-- [ ] `Argonauta: Ask About Selection` aciona fluxo a partir de seleção no editor.
-- [ ] UI com modos visíveis `Web Assisted`, `Official API` (indisponível se não implementado) e `Web Bridge` (experimental/bloqueado se aplicável).
-- [ ] Área de conversa/atividade **local**, sem fingir sincronização automática com Gemini Web.
+- [ ] Tratar a conexão com modelos de inferência como dependência explícita e desacoplada, sem simular agentes com chat mock ou prometer integrações web não comprovadas.
+- [ ] Exibir claramente os modos na UI: `Agent Core` (núcleo local ativo), `Web Assisted` (fallback manual ativo), `Official API` (indisponível se não configurado) e `Web Bridge` (experimental/bloqueado se aplicável).
 - [ ] Histórico local opcional, política de retenção e comando de limpeza.
 - [ ] First-run Disclaimer com confirmação antes de ações externas, conforme FR-08b do PRD.
 - [ ] Erros claros, cancelamento, acessibilidade por teclado, tema claro/escuro, CSP restritiva.
 - [ ] Nenhuma dependência obrigatória de VS Code instalado.
+- [ ] Configurar build e empacotamento reproduzível do `.vsix` da extensão para instalação direta no Antigravity IDE. (Nota: gerar o `.vsix` é entrega de M1; a publicação formal em lojas é etapa de M5).
 
 ### 6.2 Contexto, privacidade e aprovação — T05
 
@@ -253,16 +256,15 @@ Nenhuma POC autoriza leitura de DOM, cookies, sessões do Google, comando de she
 - [ ] Gerar inventário do contexto com caminhos relativos, linguagem e tamanho, sem exposição indevida.
 - [ ] Aplicar exclusões `.gitignore`, `.env`, chaves privadas, certificados, tokens, arquivos sensíveis e padrões configuráveis.
 - [ ] Prevenir path traversal, symlink escape e acesso fora do workspace aprovado.
-- [ ] Pré-visualizar cada trecho antes do handoff; permitir remover arquivos/trechos.
-- [ ] Exigir autorização específica para copiar/transferir o conteúdo; evitar inclusão automática de projeto completo.
+- [ ] Pré-visualizar cada trecho antes do compartilhamento; permitir remover arquivos/trechos.
+- [ ] Exigir autorização específica para qualquer operação de saída; evitar inclusão automática de projeto completo.
 - [ ] Não transformar conteúdo de arquivos, comentários ou respostas em instruções privilegiadas (*prompt injection*).
 
-### 6.3 Fluxo web assistido e patch review — T06
+### 6.3 Handoff manual (Web Assisted), parser e revisão de patches — T06
 
-- [ ] Preparar prompt estruturado (problema, contexto aprovado, linguagem/arquivos e instruções).
-- [ ] Copiar somente texto revisado para clipboard; abrir/focar Gemini Web no **navegador legítimo e suportado**, com fallback externo.
-- [ ] Interação, login e envio ao Google realizados pelo **próprio usuário**.
-- [ ] Importar resposta por colagem explícita/ação consciente; nenhuma leitura programática do Gemini Web.
+- [ ] Suporte ao modo Web Assisted como fallback manual: preparar prompt estruturado com contexto aprovado e copiar para clipboard com foco no navegador legítimo do usuário.
+- [ ] Interação, login e envio ao Google no fluxo Web Assisted realizados pelo **próprio usuário**.
+- [ ] Importar resposta por colagem consciente; nenhuma leitura programática simulada da página do Gemini Web.
 - [ ] Parser de patches/alterações com validação, diagnóstico e tratamento de Unicode.
 - [ ] Preview de diff por arquivo, apply/reject explícito; sem escrita prévia à aprovação.
 - [ ] Suportar conflitos, arquivos inexistentes, leitura/escrita fora do workspace, symlinks e reversão segura.
@@ -270,17 +272,17 @@ Nenhuma POC autoriza leitura de DOM, cookies, sessões do Google, comando de she
 
 ### 6.4 Fluxo completo de aceitação de M1 / G2
 
-1. Abrir Argonauta dentro do **Antigravity IDE real**.
-2. Selecionar código, abrir comando, inspecionar prévia e exclusões.
-3. Confirmar contexto que será copiado e abrir Gemini Web externamente, se necessário.
-4. Enviar manualmente prompt em sessão legítima.
-5. Importar resposta e visualizar diff.
-6. Rejeitar/aprovar mudanças específicas; provar que antes da aprovação o workspace permanece intacto.
-7. Testar `.env`, chaves, symlinks fora da raiz, workspace não confiável, patches inválidos e cancelamento.
-8. Validar logs e histórico, primeira execução/disclaimer, restart e comandos.
+1. Abrir a extensão Argonauta instalada via `.vsix` dentro do **Antigravity IDE real**.
+2. Verificar ícone na Activity Bar e carregamento do painel integrado com indicação de modos.
+3. Testar seleção de código, inspeção de contexto curado e exclusões estritas (`.env`, segredos).
+4. Validar o núcleo de agente, loop de tarefas e solicitação de autorização para ferramentas locais.
+5. Validar o fluxo de contingência/fallback manual (Web Assisted): cópia do contexto, colagem consciente e importação de patch.
+6. Inspecionar diffs gerados e verificar que nenhuma escrita ocorre antes da aprovação explícita.
+7. Testar cenários de recusa, workspace não confiável, cancelamento e integridade do workspace.
+8. Validar logs, histórico, first-run disclaimer e empacotamento limpo do `.vsix`.
 9. Documentar versão do Antigravity, Windows, build e resultados `pass/fail/unsupported`.
 
-**M1 está pronto apenas quando todo o fluxo for demonstrado com testes e evidência real, sem precisar da ponte IPC.**
+**M1 está concluído quando a extensão real em `apps/ide-extension/` for gerada em `.vsix`, instalada e utilizável pela interface da IDE com núcleo agêntico e revisão de diffs, sem depender da ponte IPC ou de publicação em lojas.**
 
 ---
 
@@ -502,11 +504,11 @@ A API TypeScript pública de `@argonauta/protocol` já depende do Node.js (`Buff
 
 **Saída:** `accepted / blocked / rejected`, registro de ameaça, prova do Windows e autorização explícita do próximo escopo.
 
-### D02 — Abrir o backlog M1 Web Assisted em paralelo (T04–T06)
+### D02 — Iniciar a implementação da extensão real M1 em apps/ide-extension/ (T04–T06)
 
-Definir o primeiro incremento pequeno da **extensão real** do Antigravity: comando, painel e detecção de capacidades; depois contexto seguro; depois handoff e patch review. Não incorporar Chrome bridge antes da hora.
+Iniciar a implementação da **extensão real** do Antigravity em `apps/ide-extension/`: Activity Bar, painel integrado, núcleo de agente com ferramentas autorizadas, revisão de edições e fluxo de empacotamento em `.vsix` instalável pela interface da IDE. Incluir o modo Web Assisted como fallback manual de contexto/resposta, tratando a conexão com modelos de inferência como dependência explícita e desacoplada.
 
-**Saída:** plano de implementação por incrementos, testes de aceitação e UX mínima, mantendo o PRD como contrato.
+**Saída:** extensão real estruturada em `apps/ide-extension/`, empacotamento `.vsix`, testes de aceitação e UI integrada na IDE.
 
 ### D03 — Encerrar evidência de G1 para o caminho externo (T02)
 
@@ -585,6 +587,6 @@ Consultar sempre `package.json` atual antes de executar novos scripts. O comando
 
 ### Instrução pronta para a próxima conversa/agente
 
-> Trate `ROADMAP.md` como a bússola estável do Argonauta e `PRD.md` como contrato funcional. Preserve M0–M5, T01–T09, G0–G5 e a POC-05B 0–6 como níveis separados. Consulte o último commit e as evidências atuais; não suponha que a versão do arquivo corresponda ao estado local. O projeto é desenvolvido exclusivamente no Antigravity IDE, em Windows. A POC-05A e as etapas 0/1 da POC-05B foram aprovadas; a Etapa 2 foi relatada como bloqueada por segurança no `node:net`, aguardando auditoria do ADR e decisão. O MVP Web Assisted não depende dessa ponte. Não implemente Gemini Web por APIs privadas, cookies ou bypass, não afirme G3 aprovado por ter IPC, e não faça commit/push ou mudanças no Registro sem aprovação explícita. Reavalie os gates e registre decisões sem reescrever o roadmap inteiro.
+> Trate `ROADMAP.md` como a bússola estável do Argonauta e `PRD.md` como contrato funcional. Preserve M0–M5, T01–T09, G0–G5 e a POC-05B 0–6 como níveis separados. Consulte o último commit e as evidências atuais; não suponha que a versão do arquivo corresponda ao estado local. O projeto é desenvolvido exclusivamente no Antigravity IDE, em Windows. A POC-05A e as etapas 0/1 da POC-05B foram aprovadas; a Etapa 2 foi relatada como bloqueada por segurança no `node:net`, aguardando auditoria do ADR e decisão. A extensão real M1 em `apps/ide-extension/` não depende dessa ponte. Não implemente Gemini Web por APIs privadas, cookies ou bypass, não afirme G3 aprovado por ter IPC, e não faça commit/push ou mudanças no Registro sem aprovação explícita. Reavalie os gates e registre decisões sem reescrever o roadmap inteiro.
 
 **Fim do ROADMAP mestre proposto.**
