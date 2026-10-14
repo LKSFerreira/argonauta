@@ -2,7 +2,9 @@
 
 ## Estado e escopo
 
-**Estado deste roteiro:** `pending_manual_validation` — **nenhuma instalação ou execução está sendo afirmada por este documento**.
+**Estado deste roteiro:** `done` exclusivamente para o pré-requisito ambiental Win32 — T01–T11 foram executados e registrados como `pass` pelo mantenedor em 14/10/2026.
+
+**Estado da POC-05B — Etapa 2:** `blocked`. O helper seguro ainda não foi implementado e os gates de DACL, SID de logon, criação segura desde o primeiro handle e rejeição remota continuam pendentes.
 
 **Autorização do mantenedor:** instalação **manual** do Microsoft C++ Build Tools e de um Windows SDK, exclusivamente para remover o bloqueio ambiental da investigação Win32 da **POC-05B — Etapa 2**. Essa autorização não inclui a instalação automática por agente, a implementação de `@argonauta/ipc`, criação de servidor Named Pipe, autenticação HMAC, integração Chrome, alterações no Registro do Argonauta, commit, push ou início da Etapa 3.
 
@@ -18,7 +20,7 @@ Comprovar em Windows x64 que:
 4. um programa de diagnóstico temporário compila, vincula e executa com código de saída `0`, incluindo cabeçalhos Win32 e uma referência à API de ACL;
 5. a base existente do Argonauta não sofreu regressões e o gate antigo mantém o resultado esperado.
 
-**Critério de encerramento do pré-requisito:** todos os critérios **T01–T11** abaixo em `pass`, com evidência sanitizada e revisão do mantenedor. **Mesmo com tudo aprovado, a POC-05B Etapa 2 continua `blocked` até seu próprio gate IPC passar.**
+**Resultado do pré-requisito ambiental:** `done`, pois todos os critérios **T01–T11** estão registrados como `pass`, com evidência sanitizada e revisão do mantenedor. **A POC-05B Etapa 2 continua `blocked` até seu próprio gate IPC passar.**
 
 ## Pré-requisitos
 
@@ -147,7 +149,9 @@ Abra um **novo PowerShell** após a instalação/reinício.
    echo VSCMD_ARCH=%VSCMD_ARG_TGT_ARCH%
    ```
 
-   **Aceitação:** `cl.exe`, `link.exe` e `rc.exe` são encontrados a partir das pastas Microsoft correspondentes; `cl.exe /Bv` apresenta versão sem erro; SDK identificado; arquitetura de destino `x64`. **O `link.exe` do Git for Windows não pode substituir o linker do MSVC.** Não registre caminhos pessoais na evidência.
+   `cl.exe /Bv` sem arquivo-fonte exibe o inventário detalhado da versão e, em seguida, encerra com o erro **D8003**, pois nenhum arquivo-fonte foi informado. Essa ocorrência é esperada neste comando exploratório e não deve ser registrada como falha da instalação nem como compilação aprovada.
+
+   **Aceitação desta inspeção:** `cl.exe`, `link.exe` e `rc.exe` são encontrados a partir das pastas Microsoft correspondentes; `cl.exe /Bv` exibe a versão antes do D8003 esperado; SDK identificado; arquitetura de destino `x64`. **O `link.exe` do Git for Windows não pode substituir o linker do MSVC.** Não registre caminhos pessoais na evidência.
 3. Faça a seguinte **prova temporária, sem abrir um Named Pipe e sem alterar o repositório**. No mesmo prompt:
 
    ```bat
@@ -172,7 +176,17 @@ Abra um **novo PowerShell** após a instalação/reinício.
    ```
 
    **Esse programa não cria pipe, não consulta ACL real e não valida o gate IPC**: verifica somente disponibilidade do compilador, cabeçalhos, bibliotecas, linker e execução local.
-4. Ainda dentro desse **Prompt de Comando x64 Native Tools Command** Compile e execute:
+4. Ainda dentro desse **Prompt de Comando x64 Native Tools Command**, valide novamente a versão usando o arquivo diagnóstico já criado. Diferentemente do comando exploratório anterior, esta chamada fornece uma fonte válida e deve terminar sem D8003:
+
+   ```bat
+   cd /d "%TEMP%\argonauta-win32-smoke"
+   cl.exe /nologo /Bv /c smoke.cpp
+   echo CODIGO_BV_COM_FONTE=%ERRORLEVEL%
+   ```
+
+   **Aceitação:** inventário de versão apresentado, `CODIGO_BV_COM_FONTE=0` e `smoke.obj` gerado sem erros. Se o código for diferente de `0`, pare e registre a saída sanitizada.
+
+5. Compile, vincule e execute o diagnóstico:
 
    ```bat
    cd /d "%TEMP%\argonauta-win32-smoke"
@@ -188,7 +202,7 @@ Abra um **novo PowerShell** após a instalação/reinício.
    ```
 
    **Aceitação:** compilação e vinculação sem erros nem avisos tratados como erros; `CODIGO_SMOKE=0`. Se falhar, registre diagnóstico sanitizado e **pare**; não pule para a POC nativa.
-5. Não envie nem versione `smoke.cpp`, `smoke.exe`, `.obj` ou pastas temporárias. Após registrar os resultados, remova **somente** `%TEMP%\argonauta-win32-smoke` pelo Explorador de Arquivos. Não execute comandos genéricos de limpeza sobre o workspace.
+6. Não envie nem versione `smoke.cpp`, `smoke.exe`, `.obj` ou pastas temporárias. Após registrar os resultados, remova **somente** `%TEMP%\argonauta-win32-smoke` pelo Explorador de Arquivos. Não execute comandos genéricos de limpeza sobre o workspace.
 
 ## Regressões do repositório — depois da instalação
 
@@ -215,7 +229,7 @@ $LASTEXITCODE
 
 O número histórico de 77 testes é uma baseline, não quantidade garantida para todo commit futuro; registre o total realmente observado. A instalação de Build Tools não deveria modificar arquivos do repositório; alterações documentais locais preexistentes devem ser preservadas.
 
-## Matriz de verificações — preencher após executar
+## Matriz de verificações — execução concluída
 
 | ID | Critério | Resultado esperado | Resultado executado (`pass` / `fail` / `unsupported`) | Evidência sanitizada |
 |---|---|---|---|---|
@@ -232,6 +246,22 @@ O número histórico de 77 testes é uma baseline, não quantidade garantida par
 | T11 | Gate original preservado | `node:net` segue `blocked`, código `2` | `pass` | `verify-ipc-security-gate.mjs` retornou `blocked` (código `2`), permissões abertas preservadas |
 
 **Regra de resultado geral:** `pass` com todos os onze itens em `pass` e aprovação do mantenedor.
+
+## Classificação das evidências
+
+### Evidência executada pelo mantenedor
+
+Os resultados T01–T11 e o registro de execução abaixo representam operações realizadas localmente pelo mantenedor em 14/10/2026. T01–T09 cobrem ambiente, instalação, localização das ferramentas, compilação e execução do smoke test. T10 e T11 cobrem, respectivamente, as regressões locais do Argonauta e a reprodução do gate histórico `node:net` como `blocked` com código `2`.
+
+A correção documental de `cl.exe /Bv /c smoke.cpp` torna o roteiro reproduzível sem D8003 depois que a fonte existe. Ela não é apresentada retroativamente como um comando adicional executado na evidência original; o T08 permanece sustentado pela compilação completa já registrada com código `0`.
+
+### Confirmação documental
+
+Este documento preserva as versões, o hash do instalador e as evidências sanitizadas informadas pelo mantenedor. A revisão documental confirma coerência entre o estado `done` do pré-requisito ambiental e os onze resultados `pass`; ela não substitui nem amplia os testes manuais executados.
+
+### CI
+
+O workflow `.github/workflows/validation.yml` executa em Windows com Node.js 20: typecheck, testes, verificação das fixtures, auditoria npm e `git diff --check`. Ele não instala nem valida MSVC/Windows SDK, não executa o smoke test C++ e não executa o gate `node:net` de saída deliberadamente bloqueante. Portanto, CI é evidência complementar da base TypeScript, não evidência do pré-requisito ambiental Win32 nem aprovação da POC-05B Etapa 2.
 
 ## Diagnóstico de falhas e retomada
 
@@ -251,7 +281,7 @@ O número histórico de 77 testes é uma baseline, não quantidade garantida par
 
 Não executar desinstalação, limpeza ampla, reparação invasiva, alteração de políticas de execução ou mudança do Registro sem nova revisão/consentimento.
 
-## Registro da execução — preencher pelo responsável
+## Registro da execução realizada pelo mantenedor
 
 | Campo | Valor observado |
 |---|---|
@@ -280,7 +310,7 @@ Não executar desinstalação, limpeza ampla, reparação invasiva, alteração 
 
 ## Encerramento e próximo gate
 
-Com T01–T11 aprovados e o registro revisado, **o pré-requisito de toolchain poderá ser declarado `done`**. Isso **não** altera a situação `blocked` da POC-05B Etapa 2.
+Com T01–T11 aprovados e o registro revisado, **o pré-requisito ambiental de toolchain está `done`**. Esse estado se limita à disponibilidade e ao funcionamento de MSVC/Windows SDK e **não** altera a situação `blocked` da POC-05B Etapa 2.
 
 Somente após a confirmação do mantenedor, o próximo trabalho, **ainda dentro da Etapa 2**, será preparar e executar o helper diagnóstico Win32 definido pela ADR-0003, com criação de Named Pipe segura desde o primeiro handle, DACL efetiva, SID de logon, `PIPE_REJECT_REMOTE_CLIENTS`, testes negativos e regressões. Nada autoriza iniciar a Etapa 3.
 
