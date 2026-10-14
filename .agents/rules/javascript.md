@@ -1,5 +1,5 @@
 ﻿---
-trigger: model_decision
+trigger: always_on
 description: JS/TS conventions, project structure, naming, tests, and ESLint/Prettier formatting.
 ---
 
@@ -39,7 +39,9 @@ src/
 
 ## 3: Code Conventions
 
-### Naming (always pt-BR)
+### Naming
+- **Structural names**: Prefer established English conventions for directories, packages, modules, tests, fixtures, scripts, build artifacts, and workspaces when adopted by the project.
+- **Domain language**: Keep business concepts and user-facing identifiers in pt-BR unless an external API or protocol defines the identifier.
 - **Variables and functions**: camelCase (`calcularTotal`, `usuarioAtual`).
 - **React components**: PascalCase (`FormularioProduto`, `ListaCarrinho`).
 - **Constants**: SCREAMING_SNAKE_CASE (`CHAVE_STORAGE`, `URL_API`).

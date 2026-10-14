@@ -1,0 +1,44 @@
+name: Validação
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  validar:
+    name: Compilar e testar no Windows
+    runs-on: windows-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Obter repositório
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Verificar tipos
+        run: npm run typecheck
+
+      - name: Executar testes e regressões
+        run: npm test
+
+      - name: Verificar fixtures congeladas
+        run: npm run verificar:fixtures
+
+      - name: Auditar dependências
+        run: npm audit --audit-level=high
+
+      - name: Verificar whitespace
+        run: git diff --check

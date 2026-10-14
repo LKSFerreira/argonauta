@@ -1,0 +1,20 @@
+{
+  "name": "argonauta",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "tools/*",
+    "tests/*"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "compilar": "npm run compilar --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "verificar:fixtures": "node scripts/verify-fixtures.mjs",
+    "verificar": "npm run typecheck && npm run test && npm run verificar:fixtures"
+  }
+}

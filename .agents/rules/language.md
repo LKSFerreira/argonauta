@@ -24,4 +24,4 @@ English is used **only** for internal agent-control instructions. An instruction
 
 ## Implementation rule
 
-When creating or changing project files, write all natural-language material in `pt-BR` and follow the project-specific naming conventions. Use English only where the underlying technology requires it.
+When creating or changing project files, write all natural-language material in `pt-BR` and follow the project-specific naming conventions. Use English where the underlying technology requires it or where the user has explicitly adopted established structural conventions, such as directory, package, module, test, fixture, script, build, runtime, and workspace names. Natural-language explanations and user-facing content remain in `pt-BR`.
