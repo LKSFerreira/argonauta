@@ -9,6 +9,9 @@
 - [x] Criar matriz de compatibilidade e plano de discovery.
 - [x] Executar POC-01, POC-02 e POC-05A com evidências registradas.
 - [ ] Executar POC-05B (comunicação de ponta a ponta Antigravity IDE ↔ Chrome via IPC local).
+  - [x] Etapa 0: validar compatibilidade das APIs públicas no Antigravity IDE.
+  - [x] Etapa 1: congelar contratos, fixtures binárias e regressões automatizadas.
+  - [ ] Etapa 2: implementar e comprovar o transporte local autorizado.
 - [ ] Confirmar disponibilidade de nome, namespace e publisher.
 - [ ] Decidir os Gates G1 e G3 antes de prometer automação web.
 

@@ -656,6 +656,6 @@ Em 14/10/2026, a arquitetura recebeu aprovação condicional com quatro revisõe
 3. conexão Chrome manual durante a depuração inicial;
 4. aprovação separada antes de cada etapa.
 
-A autorização atual cobre exclusivamente a **Etapa 0 — Gate de compatibilidade do Antigravity**. Nenhum Named Pipe, Native Messaging Host da POC-05B, script de instalação ou chave de Registro deve ser criado nesta etapa.
+A **Etapa 0 — Gate de compatibilidade do Antigravity** foi aprovada manualmente com 9 verificações `pass`, 0 `fail` e 0 `unsupported`.
 
-O avanço para a Etapa 1 deverá aguardar nova aprovação explícita.
+A autorização atual cobre exclusivamente a **Etapa 1 — Congelamento de contratos, compatibilidade binária e regressões**. Nenhum Named Pipe, Native Messaging Host da POC-05B, script de instalação ou chave de Registro deve ser criado nesta etapa. O avanço para a Etapa 2 depende de nova revisão técnica e aprovação explícita.

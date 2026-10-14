@@ -109,7 +109,7 @@ Falhas: 0
 Node.js: 24.16.0
 ```
 
-Também foram aprovadas as verificações de sintaxe dos módulos JavaScript, dos scripts PowerShell e dos dois manifestos JSON. O teste manual com o Chrome permanece pendente porque exige carregamento da extensão e alteração do Registro autorizados pelo usuário.
+Também foram aprovadas as verificações de sintaxe dos módulos JavaScript, dos scripts PowerShell e dos dois manifestos JSON. Depois da instalação manual autorizada, o teste Chrome → host → Chrome foi aprovado em 14/10/2026, conforme o estado registrado no início deste documento.
 
 ## Instalação manual no Windows
 

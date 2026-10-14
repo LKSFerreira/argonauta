@@ -29,7 +29,7 @@ Ambiente de compilação observado em 14/10/2026:
 
 | Item | Evidência | Resultado |
 |---|---|---|
-| Antigravity instalado | Produto 2.5.5; base/API 1.107.0 | `pass` para inspeção da instalação; runtime da extensão ainda requer teste manual |
+| Antigravity instalado | Produto 2.5.5; base/API 1.107.0 | `pass` para inspeção da instalação e, posteriormente, para a validação manual final |
 | Dependências do probe | TypeScript 5.9.3, `@types/vscode` 1.107.0 e `@types/node` 20.19.43 | `pass` |
 | Compilação estrita | `npm test` executou `tsc -p tsconfig.json` | `pass` |
 | Compilação isolada após o diagnóstico | `npm run compilar` terminou com código de saída zero | `pass` |
@@ -69,9 +69,9 @@ Portanto, enquanto a mensagem permanecia pendente, `secrets.store`, `secrets.get
 
 `Promise.race` ou um timeout equivalente não cancela a Promise original. Por isso, se `secrets.store` exceder o limite, a extensão tenta a remoção imediatamente e agenda outra remoção quando a Promise original finalmente concluir. A chave fixa também é verificada no início da próxima execução e durante a desativação.
 
-## Nova validação manual pendente
+## Validação manual final
 
-O carregamento da extensão e a presença do comando foram confirmados pelo mantenedor. O fluxo completo após a correção deverá ser repetido no Antigravity IDE conforme o roteiro atualizado no `README.md` do experimento.
+O mantenedor executou o fluxo completo após a correção diretamente no Antigravity IDE e aprovou a Etapa 0 com **9 verificações `pass`, 0 `fail` e 0 `unsupported`**. Essa evidência foi fornecida como resultado final da validação manual; este repositório não contém um log runtime bruto dessa execução e, por isso, nenhum log retroativo é reproduzido aqui.
 
 Após executar **`Argonauta: Check Compatibility`**, registrar cada capacidade exclusivamente como:
 
@@ -79,7 +79,7 @@ Após executar **`Argonauta: Check Compatibility`**, registrar cada capacidade e
 - `fail`: API disponível, mas a operação falhou;
 - `unsupported`: API pública ausente no host.
 
-Critérios para aprovar a Etapa 0:
+Os critérios usados para aprovar a Etapa 0 foram:
 
 1. a extensão carrega em uma nova janela do próprio Antigravity;
 2. o comando aparece na paleta e executa;
@@ -88,7 +88,7 @@ Critérios para aprovar a Etapa 0:
 5. o relatório mostra execução desktop, local e não remota;
 6. o relatório não contém caminhos ou identificadores sensíveis.
 
-Qualquer `fail` ou `unsupported` em uma capacidade obrigatória bloqueia o avanço para a Etapa 1 até análise explícita.
+Nenhuma capacidade obrigatória foi classificada como `fail` ou `unsupported`.
 
 ## Estado
 
@@ -96,6 +96,6 @@ Qualquer `fail` ou `unsupported` em uma capacidade obrigatória bloqueia o avan�
 
 **Carregamento e registro do comando no Antigravity:** `pass`.
 
-**Fluxo completo após a correção:** pendente de nova execução manual com coleta do canal de diagnóstico.
+**Fluxo completo após a correção:** `pass` — 9 verificações aprovadas, 0 falhas e 0 capacidades sem suporte.
 
-**Decisão sobre a Etapa 1:** bloqueada até a validação manual e nova aprovação do responsável pelo projeto.
+**Decisão sobre a Etapa 1:** autorizada explicitamente pelo responsável pelo projeto após a aprovação manual da Etapa 0.
