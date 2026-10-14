@@ -267,6 +267,7 @@ if (process.platform !== 'win32') {
     'bytes',
     'lote',
     'truncado',
+    'segundo-frame',
   ]) {
     test(`M11–M12: rejeita entrada ${modo} sem PONG_GATE`, async () => {
       const { prontidao, saidaHelper } = await iniciarEObterProntidao();
@@ -277,6 +278,16 @@ if (process.platform !== 'win32') {
       assert.doesNotMatch(saida.stdout, /"respostaEnviada":true/u);
     });
   }
+
+  test('M11–M12: rejeita segundo frame assíncrono chegado após a primeira inspeção sem PONG_GATE', async () => {
+    const { prontidao, saidaHelper } = await iniciarEObterProntidao();
+    const resultadoCliente = await executarCliente(prontidao.caminhoPipe, 'segundo-frame');
+    assert.equal(resultadoCliente.respostaPong, false);
+    const saida = await saidaHelper;
+    assert.equal(saida.codigo, 3);
+    assert.match(saida.stdout, /"atendimento":"mensagem_invalida"/u);
+    assert.doesNotMatch(saida.stdout, /"respostaEnviada":true/u);
+  });
 
   test('M13: cliente silencioso termina por timeout finito', async () => {
     const inicio = Date.now();
