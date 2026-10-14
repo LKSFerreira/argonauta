@@ -1,0 +1,16 @@
+{
+  "name": "@argonauta/ipc-security-probe",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "limpar": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/clean.ps1",
+    "compilar": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build.ps1",
+    "typecheck": "node --check client/diagnostic-client.mjs && node --check tests/ipc-security-probe.test.mjs && node --check tests/squatter.mjs",
+    "test": "npm run compilar && node --test tests/ipc-security-probe.test.mjs",
+    "validar": "npm run typecheck && npm test"
+  }
+}
