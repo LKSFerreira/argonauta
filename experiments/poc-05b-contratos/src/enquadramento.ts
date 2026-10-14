@@ -1,7 +1,10 @@
 import { ErroProtocolo, falhar } from './erros.js';
+import { validarEstruturaJsonPassiva } from './estrutura-json.js';
 import { LIMITE_PAYLOAD_CONTRATO } from './tipos.js';
 
 export type OrdemBytes = 'LE' | 'BE';
+export const LIMITE_FRAGMENTO_PADRAO = LIMITE_PAYLOAD_CONTRATO + 4;
+export const LIMITE_MENSAGENS_POR_ADICAO = 32;
 
 function escreverComprimento(cabecalho: Buffer, comprimento: number, ordem: OrdemBytes): void {
   if (ordem === 'LE') {
@@ -16,11 +19,21 @@ function lerComprimento(cabecalho: Buffer, ordem: OrdemBytes): number {
   return ordem === 'LE' ? cabecalho.readUInt32LE(0) : cabecalho.readUInt32BE(0);
 }
 
+function normalizarLimitePayload(limiteSolicitado: number): number {
+  if (!Number.isSafeInteger(limiteSolicitado) || limiteSolicitado < 1) {
+    falhar('VALOR_INVALIDO');
+  }
+
+  return Math.min(limiteSolicitado, LIMITE_PAYLOAD_CONTRATO);
+}
+
 export function serializarEnquadramento(
   valor: unknown,
   ordem: OrdemBytes,
   limitePayload = LIMITE_PAYLOAD_CONTRATO
 ): Buffer {
+  const limiteEfetivo = normalizarLimitePayload(limitePayload);
+  validarEstruturaJsonPassiva(valor);
   let json: string | undefined;
 
   try {
@@ -38,7 +51,7 @@ export function serializarEnquadramento(
     falhar('PREFIXO_INVALIDO');
   }
 
-  if (payload.length > limitePayload) {
+  if (payload.length > limiteEfetivo) {
     falhar('TAMANHO_EXCEDIDO');
   }
 
@@ -48,14 +61,19 @@ export function serializarEnquadramento(
 }
 
 export class DecodificadorEnquadramento {
-  private bufferPendente = Buffer.alloc(0);
-  private comprimentoEsperado: number | null = null;
+  private readonly cabecalhoPendente = Buffer.alloc(4);
+  private bytesCabecalhoRecebidos = 0;
+  private payloadPendente: Buffer | null = null;
+  private bytesPayloadRecebidos = 0;
   private encerrado = false;
+  private readonly limitePayload: number;
 
   public constructor(
     private readonly ordem: OrdemBytes,
-    private readonly limitePayload = LIMITE_PAYLOAD_CONTRATO
-  ) {}
+    limitePayload = LIMITE_PAYLOAD_CONTRATO
+  ) {
+    this.limitePayload = normalizarLimitePayload(limitePayload);
+  }
 
   public adicionar(fragmento: Uint8Array): unknown[] {
     if (this.encerrado) {
@@ -63,43 +81,60 @@ export class DecodificadorEnquadramento {
     }
 
     try {
-      this.bufferPendente = Buffer.concat([
-        this.bufferPendente,
-        Buffer.from(fragmento)
-      ]);
-      return this.processar();
+      if (fragmento.byteLength > LIMITE_FRAGMENTO_PADRAO) {
+        falhar('FRAGMENTO_EXCEDIDO');
+      }
+
+      return this.processar(fragmento);
     } catch (erro: unknown) {
       this.encerrado = true;
+      this.limparEstado();
       throw erro;
     }
   }
 
   public finalizar(): void {
     try {
-      if (this.comprimentoEsperado !== null) {
+      if (this.payloadPendente !== null) {
         falhar('PAYLOAD_TRUNCADO');
       }
 
-      if (this.bufferPendente.length > 0) {
+      if (this.bytesCabecalhoRecebidos > 0) {
         falhar('CABECALHO_INCOMPLETO');
       }
     } finally {
       this.encerrado = true;
+      this.limparEstado();
     }
   }
 
-  private processar(): unknown[] {
+  private processar(fragmento: Uint8Array): unknown[] {
     const mensagens: unknown[] = [];
+    let posicao = 0;
 
-    while (true) {
-      if (this.comprimentoEsperado === null) {
-        if (this.bufferPendente.length < 4) {
-          break;
+    while (posicao < fragmento.byteLength) {
+      if (mensagens.length >= LIMITE_MENSAGENS_POR_ADICAO) {
+        falhar('LOTE_EXCEDIDO');
+      }
+
+      if (this.payloadPendente === null) {
+        const quantidadeCabecalho = Math.min(
+          4 - this.bytesCabecalhoRecebidos,
+          fragmento.byteLength - posicao
+        );
+        this.cabecalhoPendente.set(
+          fragmento.subarray(posicao, posicao + quantidadeCabecalho),
+          this.bytesCabecalhoRecebidos
+        );
+        this.bytesCabecalhoRecebidos += quantidadeCabecalho;
+        posicao += quantidadeCabecalho;
+
+        if (this.bytesCabecalhoRecebidos < 4) {
+          continue;
         }
 
-        const cabecalho = this.bufferPendente.subarray(0, 4);
-        const comprimento = lerComprimento(cabecalho, this.ordem);
-        this.bufferPendente = this.bufferPendente.subarray(4);
+        const comprimento = lerComprimento(this.cabecalhoPendente, this.ordem);
+        this.bytesCabecalhoRecebidos = 0;
 
         if (comprimento === 0) {
           falhar('PREFIXO_INVALIDO');
@@ -109,20 +144,41 @@ export class DecodificadorEnquadramento {
           falhar('TAMANHO_EXCEDIDO');
         }
 
-        this.comprimentoEsperado = comprimento;
+        this.payloadPendente = Buffer.alloc(comprimento);
+        this.bytesPayloadRecebidos = 0;
       }
 
-      if (this.bufferPendente.length < this.comprimentoEsperado) {
-        break;
+      const payload = this.payloadPendente;
+      if (payload === null) {
+        continue;
       }
 
-      const payload = this.bufferPendente.subarray(0, this.comprimentoEsperado);
-      this.bufferPendente = this.bufferPendente.subarray(this.comprimentoEsperado);
-      this.comprimentoEsperado = null;
-      mensagens.push(this.interpretarPayload(payload));
+      const quantidadePayload = Math.min(
+        payload.length - this.bytesPayloadRecebidos,
+        fragmento.byteLength - posicao
+      );
+      payload.set(
+        fragmento.subarray(posicao, posicao + quantidadePayload),
+        this.bytesPayloadRecebidos
+      );
+      this.bytesPayloadRecebidos += quantidadePayload;
+      posicao += quantidadePayload;
+
+      if (this.bytesPayloadRecebidos === payload.length) {
+        const mensagem = this.interpretarPayload(payload);
+        this.payloadPendente = null;
+        this.bytesPayloadRecebidos = 0;
+        mensagens.push(mensagem);
+      }
     }
 
     return mensagens;
+  }
+
+  private limparEstado(): void {
+    this.bytesCabecalhoRecebidos = 0;
+    this.payloadPendente = null;
+    this.bytesPayloadRecebidos = 0;
   }
 
   private interpretarPayload(payload: Buffer): unknown {

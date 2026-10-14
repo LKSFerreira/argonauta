@@ -1,7 +1,12 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { DecodificadorEnquadramento, serializarEnquadramento } from '../src/enquadramento.js';
+import {
+  DecodificadorEnquadramento,
+  LIMITE_FRAGMENTO_PADRAO,
+  LIMITE_MENSAGENS_POR_ADICAO,
+  serializarEnquadramento
+} from '../src/enquadramento.js';
 import { ErroProtocolo, type CodigoErroProtocolo } from '../src/erros.js';
 
 function esperarCodigo(codigo: CodigoErroProtocolo, operacao: () => unknown): void {
@@ -20,6 +25,46 @@ describe('enquadramento binário', () => {
 
     assert.deepEqual(decodificador.adicionar(bytes), [mensagem]);
     decodificador.finalizar();
+  });
+
+  it('serializador rejeita comportamentos controlados sem executá-los', () => {
+    let execucoes = 0;
+    const comAcessores = Object.create(null) as Record<string, unknown>;
+    Object.defineProperty(comAcessores, 'valor', {
+      enumerable: true,
+      get: () => {
+        execucoes += 1;
+        return 'não executar';
+      },
+      set: () => {
+        execucoes += 1;
+      }
+    });
+    const comMetodo = {
+      valor: 'seguro',
+      toJSON: () => {
+        execucoes += 1;
+        return { valor: 'alterado' };
+      }
+    };
+    const comSetter = Object.create(null) as Record<string, unknown>;
+    Object.defineProperty(comSetter, 'valor', {
+      enumerable: true,
+      set: () => {
+        execucoes += 1;
+      }
+    });
+    const comProxy = new Proxy({ valor: 'seguro' }, {
+      ownKeys: () => {
+        execucoes += 1;
+        return ['valor'];
+      }
+    });
+
+    for (const entrada of [comAcessores, comSetter, comMetodo, comProxy]) {
+      esperarCodigo('MENSAGEM_INVALIDA', () => serializarEnquadramento(entrada, 'LE'));
+    }
+    assert.equal(execucoes, 0);
   });
 
   it('processa uma mensagem fragmentada byte a byte', () => {
@@ -47,6 +92,37 @@ describe('enquadramento binário', () => {
 
     assert.deepEqual(decodificador.adicionar(lote), [primeira, segunda]);
     decodificador.finalizar();
+  });
+
+  it('aceita até o limite explícito de frames concatenados', () => {
+    const mensagens = Array.from(
+      { length: LIMITE_MENSAGENS_POR_ADICAO },
+      (_, indice) => ({ indice })
+    );
+    const lote = Buffer.concat(
+      mensagens.map((mensagem) => serializarEnquadramento(mensagem, 'LE'))
+    );
+    const decodificador = new DecodificadorEnquadramento('LE');
+
+    assert.deepEqual(decodificador.adicionar(lote), mensagens);
+    decodificador.finalizar();
+  });
+
+  it('rejeita lote acima do limite explícito de frames concatenados', () => {
+    const lote = Buffer.concat(Array.from(
+      { length: LIMITE_MENSAGENS_POR_ADICAO + 1 },
+      (_, indice) => serializarEnquadramento({ indice }, 'LE')
+    ));
+    const decodificador = new DecodificadorEnquadramento('LE');
+
+    esperarCodigo('LOTE_EXCEDIDO', () => decodificador.adicionar(lote));
+  });
+
+  it('rejeita fragmento maior que um frame máximo antes de copiá-lo', () => {
+    const decodificador = new DecodificadorEnquadramento('LE');
+    const fragmentoExcessivo = new Uint8Array(LIMITE_FRAGMENTO_PADRAO + 1);
+
+    esperarCodigo('FRAGMENTO_EXCEDIDO', () => decodificador.adicionar(fragmentoExcessivo));
   });
 
   it('rejeita prefixo incompleto no encerramento', () => {
@@ -126,6 +202,19 @@ describe('enquadramento binário', () => {
       'TAMANHO_EXCEDIDO',
       () => serializarEnquadramento({ dados: 'x'.repeat(65_536) }, 'LE')
     );
+  });
+
+  it('não permite ampliar o teto de 64 KiB por configuração', () => {
+    const mensagemExcessiva = { dados: 'x'.repeat(65_536) };
+    esperarCodigo(
+      'TAMANHO_EXCEDIDO',
+      () => serializarEnquadramento(mensagemExcessiva, 'LE', Number.MAX_SAFE_INTEGER)
+    );
+
+    const cabecalho = Buffer.alloc(4);
+    cabecalho.writeUInt32LE(65_537, 0);
+    const decodificador = new DecodificadorEnquadramento('LE', Number.MAX_SAFE_INTEGER);
+    esperarCodigo('TAMANHO_EXCEDIDO', () => decodificador.adicionar(cabecalho));
   });
 
   it('opera em big-endian quando solicitado explicitamente', () => {

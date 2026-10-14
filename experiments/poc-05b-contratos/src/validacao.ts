@@ -1,4 +1,5 @@
 import { falhar } from './erros.js';
+import { validarEstruturaJsonPassiva } from './estrutura-json.js';
 import {
   CODIGOS_ERRO_MENSAGEM,
   LIMITE_IDENTIFICADOR,
@@ -242,36 +243,6 @@ function validarErro(objeto: ObjetoDesconhecido): void {
   if (typeof erro.repetivel !== 'boolean') {
     falhar('VALOR_INVALIDO');
   }
-}
-
-function validarEstruturaJsonPassiva(valor: unknown, ancestrais = new WeakSet<object>()): void {
-  if (valor === null || ['string', 'number', 'boolean'].includes(typeof valor)) {
-    return;
-  }
-
-  if (typeof valor !== 'object') {
-    falhar('MENSAGEM_INVALIDA');
-  }
-
-  const objeto = valor as object;
-  if (ancestrais.has(objeto)) {
-    falhar('JSON_INVALIDO');
-  }
-
-  const prototipo = Object.getPrototypeOf(objeto) as unknown;
-  if (!Array.isArray(objeto) && prototipo !== Object.prototype && prototipo !== null) {
-    falhar('MENSAGEM_INVALIDA');
-  }
-
-  ancestrais.add(objeto);
-  const descritores = Object.getOwnPropertyDescriptors(objeto);
-  for (const descritor of Object.values(descritores)) {
-    if (descritor.get !== undefined || descritor.set !== undefined) {
-      falhar('MENSAGEM_INVALIDA');
-    }
-    validarEstruturaJsonPassiva(descritor.value, ancestrais);
-  }
-  ancestrais.delete(objeto);
 }
 
 function validarTamanho(valor: unknown): void {

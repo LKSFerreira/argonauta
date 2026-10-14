@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import { ErroProtocolo } from '../src/erros.js';
+import { LIMITE_PROFUNDIDADE_JSON } from '../src/estrutura-json.js';
 import { validarMensagem } from '../src/validacao.js';
 
 const MENSAGEM_VALIDA = {
@@ -68,7 +69,7 @@ describe('robustez da validação', () => {
     });
 
     assert.throws(() => validarMensagem(entrada), ErroProtocolo);
-    assert.ok(leituras <= 1);
+    assert.equal(leituras, 0);
   });
 
   it('rejeita referência circular com código previsível', () => {
@@ -79,5 +80,26 @@ describe('robustez da validação', () => {
       () => validarMensagem(circular),
       (erro: unknown) => erro instanceof ErroProtocolo && erro.codigo === 'JSON_INVALIDO'
     );
+  });
+
+  it('rejeita objetos e arrays excessivamente profundos sem RangeError', () => {
+    let objetoProfundo: unknown = { folha: true };
+    let arrayProfundo: unknown = ['folha'];
+    for (let nivel = 0; nivel <= LIMITE_PROFUNDIDADE_JSON; nivel += 1) {
+      objetoProfundo = { proximo: objetoProfundo };
+      arrayProfundo = [arrayProfundo];
+    }
+
+    for (const entrada of [objetoProfundo, arrayProfundo]) {
+      assert.throws(
+        () => validarMensagem({ ...MENSAGEM_VALIDA, estruturaExcessiva: entrada }),
+        (erro: unknown) => {
+          assert.ok(erro instanceof ErroProtocolo);
+          assert.equal(erro.codigo, 'PROFUNDIDADE_EXCEDIDA');
+          assert.ok(!(erro instanceof RangeError));
+          return true;
+        }
+      );
+    }
   });
 });
