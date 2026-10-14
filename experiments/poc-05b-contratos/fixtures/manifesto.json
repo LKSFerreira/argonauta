@@ -1,0 +1,37 @@
+{
+  "versaoFixture": 1,
+  "protocolo": "1.0",
+  "codificacao": "UTF-8",
+  "prefixo": "uint32",
+  "ordemBytes": "little-endian",
+  "origem": "Valores fixos compatíveis com a implementação aprovada da POC-05A.",
+  "fixtures": [
+    {
+      "arquivo": "ping-v1-windows-le.bin",
+      "mensagem": {
+        "tipo": "PING",
+        "idRequisicao": "fixture-ping-1",
+        "versaoProtocolo": "1.0"
+      },
+      "json": "{\"tipo\":\"PING\",\"idRequisicao\":\"fixture-ping-1\",\"versaoProtocolo\":\"1.0\"}",
+      "comprimentoPayload": 71,
+      "comprimentoTotal": 75,
+      "hexadecimal": "470000007b227469706f223a2250494e47222c2269645265717569736963616f223a22666978747572652d70696e672d31222c2276657273616f50726f746f636f6c6f223a22312e30227d",
+      "sha256": "414061fd7df7c40fa1686903b5a1781636042c75fd858383c45c39973b2328cd"
+    },
+    {
+      "arquivo": "pong-v1-windows-le.bin",
+      "mensagem": {
+        "tipo": "PONG",
+        "idRequisicao": "fixture-ping-1",
+        "versaoProtocolo": "1.0",
+        "versaoHost": "0.1.0"
+      },
+      "json": "{\"tipo\":\"PONG\",\"idRequisicao\":\"fixture-ping-1\",\"versaoProtocolo\":\"1.0\",\"versaoHost\":\"0.1.0\"}",
+      "comprimentoPayload": 92,
+      "comprimentoTotal": 96,
+      "hexadecimal": "5c0000007b227469706f223a22504f4e47222c2269645265717569736963616f223a22666978747572652d70696e672d31222c2276657273616f50726f746f636f6c6f223a22312e30222c2276657273616f486f7374223a22302e312e30227d",
+      "sha256": "4c9bbe64c0dc3fc163a9200dfbf45d9de65e20d121dafa9d4017087dc84af392"
+    }
+  ]
+}

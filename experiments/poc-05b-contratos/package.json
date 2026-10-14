@@ -1,0 +1,16 @@
+{
+  "name": "argonauta-poc-05b-contratos",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "limpar": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\"",
+    "compilar": "npm run limpar && node ../antigravity-extension-probe/node_modules/typescript/bin/tsc -p tsconfig.json",
+    "test": "npm run compilar && node --test dist/testes/compatibilidade.test.js dist/testes/enquadramento.test.js dist/testes/validacao.test.js dist/testes/robustez.test.js",
+    "verificar": "npm test",
+    "regenerar-fixtures": "node scripts/regenerar-fixtures.mjs"
+  }
+}
