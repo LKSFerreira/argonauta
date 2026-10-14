@@ -1,0 +1,14 @@
+{
+  "manifest_version": 3,
+  "name": "Argonauta — POC-05A",
+  "description": "Valida a comunicação local por Chrome Native Messaging.",
+  "version": "0.1.0",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwzlPNkgWGTcZXLNLKeJn3LwMPiy3MpKflE1EHl5OI6dhHkjg4c3irM3doHnVAtjZirx6iZaziWsU2FsEZ6paDYAEStowf6bz8nH1MDiouSqNljG/il/O02yzCK+oDSFdpCAjp6V+eTOsRDCOU083E+7Y64cigu3coqQjipPzfTw1r6ZWFA13jKt39a9FaKFkHdwuARd7sB6LgcYszk+SNwI1dfPq0hktz9cWKagVtn1jaqqmlECt0S6V32XLHuq1aIEUp1TeWsE7d05aFHxiU/cghx64C/htD7C0mMWv5PbyTPZTP0b0eqaeC73BeU17RuSn+vw69yMFaKDDkZE3vQIDAQAB",
+  "permissions": [
+    "nativeMessaging"
+  ],
+  "action": {
+    "default_title": "Testar ponte nativa do Argonauta",
+    "default_popup": "popup.html"
+  }
+}

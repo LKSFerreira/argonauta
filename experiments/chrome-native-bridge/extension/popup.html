@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Argonauta — POC-05A</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <main class="painel">
+      <header>
+        <p class="identificador">POC-05A</p>
+        <h1>Native Messaging Bridge</h1>
+        <p class="descricao">Validação local e isolada entre o Chrome e o host Node.js.</p>
+      </header>
+
+      <button id="botaoTestar" type="button">Test Connection</button>
+
+      <section class="resultado" aria-live="polite" aria-atomic="true">
+        <span id="indicador" class="indicador" aria-hidden="true"></span>
+        <p id="mensagemResultado">Aguardando teste.</p>
+      </section>
+    </main>
+
+    <script src="popup.js"></script>
+  </body>
+</html>
