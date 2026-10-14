@@ -38,14 +38,14 @@ Use `pass`, `fail` ou `unsupported` **somente** para testes realizados/concluíd
 | M08 | Bloqueio `\\localhost\pipe` | Rejeição ou negação comprovada; nenhuma resposta `PONG_GATE` | `pass` | Caminho localhost rejeitado; cliente local permaneceu funcional |
 | M09 | Squatting: processo adversário primeiro | Helper falha fechado e não conecta ao pipe pré-criado | `pass` | Helper retornou código `2` e não anunciou prontidão |
 | M10 | Segunda instância e concorrência | Segunda instância não assume servidor ou atendimento | `pass` | Quatro criadores concorrentes rejeitados; somente o primeiro atendeu |
-| M11 | Entrada inválida/truncada | Rejeição sem `PONG_GATE`, sem exposição de dados, sem travamento | `pass` | Literal incorreto, sufixo, NUL, bytes arbitrários e truncamento rejeitados |
+| M11 | Entrada inválida/truncada | Rejeição sem `PONG_GATE`, sem exposição de dados, sem travamento | `pass` | Literal incorreto, sufixo, NUL, bytes arbitrários, truncamento e segundo frame assíncrono rejeitados |
 | M12 | Tamanho e buffer | Máximo de 64 bytes; excesso recusado; sem crescimento sem limites | `pass` | Buffer fixo; vazio, 64 inválidos, 65 bytes e lote concatenado rejeitados |
 | M13 | Cliente silencioso | Timeout finito, cancelamento e limpeza de handles/processos | `pass` | Cliente silencioso e servidor sem cliente encerrados por timeout finito |
 | M14 | Cliente desconectado ou helper interrompido | Falha controlada, sem exceção não tratada ou recursos residuais | `pass` | Ambos os sentidos de interrupção testados; nenhum PONG indevido |
 | M15 | Outra conta Windows | Rejeitar cliente de outro usuário real, com identidade comprovada e sem coletar credenciais | PENDENTE | — |
 | M16 | Outra sessão/logon Windows | Rejeitar cliente de outro SID de logon real | PENDENTE | — |
 | M17 | Outra máquina real | Bloquear conexão remota real; não substituir por teste `localhost` | PENDENTE | — |
-| M18 | Regressões e gate histórico | Build, typecheck, testes, fixtures, auditoria, `git diff --check`; gate `node:net` permanece `blocked` código `2` | `pass` | Build/typecheck códigos `0`; 100 testes; fixtures íntegras; audit sem vulnerabilidades; gate antigo `blocked` código `2` |
+| M18 | Regressões e gate histórico | Build, typecheck, testes, fixtures, auditoria, `git diff --check`; gate `node:net` permanece `blocked` código `2` | `pass` | Build/typecheck códigos `0`; 102 testes; fixtures íntegras; audit sem vulnerabilidades; gate antigo `blocked` código `2` |
 | M19 | Encerramento repetido e resíduos | Repetições sem pipes, handles ou PIDs da prova restantes | `pass` | Dez ciclos; reconexão ao nome exato rejeitada após cada término |
 
 ## Observações técnicas importantes

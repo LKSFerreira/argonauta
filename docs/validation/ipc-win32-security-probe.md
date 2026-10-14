@@ -76,9 +76,11 @@ A máscara ampla `0x0012019F`, derivada de `FILE_GENERIC_READ | FILE_GENERIC_WRI
 3. O token da thread é aberto com `TOKEN_QUERY`.
 4. O SID de logon do cliente é extraído de `TokenGroups` e comparado ao SID autorizado.
 5. `RevertToSelf` é executado antes de interpretar o payload como aceito.
-6. Somente um cliente autorizado com payload exato recebe `PONG_GATE`.
+6. Uma inspeção imediata (`PeekNamedPipe`) combinada com uma janela de observação sobreposta (leitura com timeout finito de 35ms) garante que nenhum frame secundário ou byte espúrio chegue assincronamente após a leitura inicial.
+7. Somente um cliente autorizado com payload exato e canal estritamente quieto recebe `PONG_GATE`.
+8. Após o envio e a leitura da confirmação `0x06` do cliente, nova inspeção assegura a ausência de bytes residuais antes do encerramento com `Sucesso`.
 
-Falha de representação ou identidade não produz resposta. Falha de `RevertToSelf` encerra o processo.
+Falha de representação, identidade, excesso de dados ou segundo frame não produz resposta. Falha de `RevertToSelf` encerra o processo.
 
 ## Evidência por item M01–M19
 
@@ -94,14 +96,14 @@ Falha de representação ou identidade não produz resposta. Falha de `RevertToS
 | M08 | `pass` | automação local | `\\localhost\pipe` rejeitado sem PONG; cliente local continuou funcional |
 | M09 | `pass` | automação multiprocesso | squatter iniciado primeiro fez o helper falhar fechado, sem prontidão |
 | M10 | `pass` | automação multiprocesso | quatro criadores concorrentes foram rejeitados; somente o primeiro servidor atendeu |
-| M11 | `pass` | automação | literal incorreto, sufixo, NUL, bytes arbitrários e truncamento foram rejeitados |
-| M12 | `pass` | automação | vazio, 64 bytes inválidos, 65 bytes e lote concatenado foram rejeitados; buffer fixo |
+| M11 | `pass` | automação | literal incorreto, sufixo, NUL, bytes arbitrários, truncamento e segundo frame assíncrono foram rejeitados |
+| M12 | `pass` | automação | vazio, 64 bytes inválidos, 65 bytes, lote concatenado e dados pós-inspeção foram rejeitados; buffer fixo |
 | M13 | `pass` | automação | cliente silencioso e servidor sem cliente terminaram por timeout/cancelamento finitos |
 | M14 | `pass` | automação multiprocesso | cliente e helper interrompidos encerraram sem PONG indevido ou pipe reutilizável |
 | M15 | `PENDENTE` | validação manual externa | outra conta Windows não foi disponibilizada |
 | M16 | `PENDENTE` | validação manual externa | outra sessão/logon não foi disponibilizada |
 | M17 | `PENDENTE` | validação manual externa | outra máquina real não foi disponibilizada; M08 não a substitui |
-| M18 | `pass` | regressão | build/typecheck códigos `0`; 100 testes; fixtures íntegras; audit sem vulnerabilidades; gate antigo `blocked` código `2` |
+| M18 | `pass` | regressão | build/typecheck códigos `0`; 102 testes; fixtures íntegras; audit sem vulnerabilidades; gate antigo `blocked` código `2` |
 | M19 | `pass` | automação repetida | dez ciclos concluídos; reconexão ao nome exato falhou após cada encerramento |
 
 ## Execução manual local, automação e revisão documental
