@@ -2,9 +2,9 @@
 
 > **Tagline (proposta):** Navigate beyond the limits.
 >
-> **Produto:** Argonauta — extensão independente para IDEs compatíveis com VS Code.
+> **Produto:** Argonauta — extensão independente desenvolvida e validada primeiro para Antigravity IDE, com compatibilidade futura com VS Code.
 >
-> **Versão do documento:** 0.1.0 (rascunho para validação)
+> **Versão do documento:** 0.1.1 (rascunho para validação; Antigravity IDE-first)
 >
 > **Data:** 14 de outubro de 2026
 >
@@ -14,11 +14,13 @@
 
 ## 1. Resumo executivo
 
-**Argonauta** é uma extensão open source para **VS Code** e, mediante testes de compatibilidade, **Antigravity IDE**, destinada a aproximar a experiência de modelos de IA disponíveis em interfaces web do fluxo de desenvolvimento dentro da IDE.
+**Argonauta** é uma extensão open source concebida **primeiro para o Antigravity IDE**, onde o mantenedor desenvolve, executa e testa seus projetos. Como objetivo posterior, buscará compatibilidade com **Visual Studio Code** e outras IDEs que exponham APIs compatíveis. Sua finalidade é aproximar a experiência de modelos de IA disponíveis em interfaces web do fluxo de desenvolvimento dentro da IDE.
 
 A oportunidade inicial surgiu quando assinantes **Google AI Pro** passaram a conseguir selecionar **Gemini 4 Argon** no aplicativo web Gemini, enquanto o acesso ao mesmo modelo não estava disponível na seleção nativa de agentes do Antigravity IDE/CLI para esse nível de assinatura (observação do idealizador em 14/10/2026; disponibilidade sujeita a mudanças).
 
 O objetivo **não** é afirmar que a assinatura Pro dá direito de consumir a API Gemini, desbloquear limites ou contornar controles de acesso. O objetivo é investigar se uma experiência de desenvolvimento assistido pode ser oferecida **usando os caminhos de acesso legitimamente disponibilizados ao usuário**, com autorização explícita, segurança, transparência e respeito aos termos aplicáveis.
+
+**Ambiente exclusivo de desenvolvimento do mantenedor:** **Antigravity IDE**. O VS Code não é ferramenta necessária para criar, editar, depurar ou empacotar este projeto. Seu uso em testes de compatibilidade poderá ser delegado a voluntários ou adiado para uma etapa posterior.
 
 **Visão de longo prazo:** uma experiência de agente de programação — chat contextual, sugestões, diffs, aplicação de alterações, ferramentas locais e sessões — com backends intercambiáveis.
 
@@ -57,8 +59,8 @@ Oferecer uma experiência **IDE-first**, começando com um fluxo web **assistido
 | Perfil | Necessidade | Prioridade |
 |---|---|---|
 | Desenvolvedor com Google AI Pro e Argon disponível no Gemini Web | Trabalhar com seu código enquanto utiliza a experiência web já oferecida à conta | Primário |
-| Usuário do Antigravity IDE | Fluxo integrado mesmo sem o Argon no seletor nativo | Primário; depende de compatibilidade |
-| Usuário do VS Code | Interface consistente de assistência à programação e revisão de patches | Primário |
+| Usuário do Antigravity IDE | Fluxo integrado mesmo sem o Argon no seletor nativo | **Prioridade P0 — plataforma principal** |
+| Usuário do VS Code | Interface consistente de assistência à programação e revisão de patches | **Secundário — validar após MVP no Antigravity** |
 | Desenvolvedor com chave de API oficial | Agente com backend programático e ferramentas estruturadas | Secundário; caminho de autonomia |
 | Mantenedor open source | Auditar segurança e contribuir com provedores/adapters | Secundário |
 
@@ -73,7 +75,7 @@ Oferecer uma experiência **IDE-first**, começando com um fluxo web **assistido
 
 ### 4.1 Objetivos de produto
 
-**O1 — Viabilidade técnica:** estabelecer, mediante experimento reproduzível, se Gemini Web autenticado e Argon podem funcionar dentro de um navegador integrado da IDE.
+**O1 — Viabilidade técnica:** estabelecer, mediante experimento reproduzível **no Antigravity IDE**, se Gemini Web autenticado e Argon podem funcionar dentro de um navegador integrado do host; usar navegador externo como alternativa quando necessário.
 
 **O2 — UX mínima útil:** usuário consegue selecionar contexto no editor, montar um prompt, acessar Gemini, copiar/importar uma resposta e revisar/aplicar um patch com segurança.
 
@@ -85,7 +87,7 @@ Oferecer uma experiência **IDE-first**, começando com um fluxo web **assistido
 
 | Métrica | Meta para a prova de conceito / beta | Método |
 |---|---|---|
-| Abertura do Gemini | Passar em VS Code e/ou Antigravity; registrar suporte por host | Roteiro manual |
+| Abertura do Gemini | Passar primeiro no Antigravity IDE; VS Code só após estabilização | Roteiro manual |
 | Login Google | Funcionar de forma normal; **sem captura de credenciais** | Teste em conta própria |
 | Visibilidade do Argon no navegador integrado | Aparecer e responder na conta Pro testada | Evidência com data, versão e dados pessoais ocultos |
 | Fluxo seleção → prompt | Concluir em até 3 ações deliberadas do usuário | Teste de usabilidade |
@@ -121,10 +123,10 @@ Oferecer uma experiência **IDE-first**, começando com um fluxo web **assistido
 | ID | Hipótese/pergunta | Estado em 14/10/2026 | Como decidir |
 |---|---|---|---|
 | H-01 | Conta Pro vê Argon no Gemini Web | **Observado** nas capturas do idealizador; não generalizar a todos os usuários | Repetir na conta de teste |
-| H-02 | VS Code consegue abrir páginas no navegador integrado | **Documentado** | Testar a versão instalada |
-| H-03 | Gemini Web aceita login no navegador integrado | **Não validado** | POC-02 |
+| H-02 | VS Code dispõe de navegador integrado | **Documentado para VS Code; não inferir suporte no Antigravity** | Pesquisa/documentação; teste de compatibilidade posterior |
+| H-03 | Gemini Web aceita login no navegador integrado **do Antigravity**, se houver | **Não validado** | POC-02 |
 | H-04 | Argon está disponível após login no navegador integrado | **Não validado** | POC-03 |
-| H-05 | Antigravity IDE contém navegador integrado equivalente | **Não validado** | POC-04 |
+| H-05 | Antigravity IDE contém navegador integrado equivalente ao do VS Code | **Não validado; hipótese prioritária** | POC-01 e POC-02 |
 | H-06 | Extensões podem controlar/observar a aba web de maneira **suportada e autorizada** | **Não comprovado** | POC-05 + análise de APIs/termos |
 | H-07 | É possível construir um agente autônomo sobre Gemini Web com integração permitida | **Alto risco / não comprovado** | Gate G3; não prometer antecipadamente |
 | H-08 | Gemini API pode sustentar modo agente próprio | **Viável em princípio com acesso e faturamento separados** | POC-07 e disponibilidade do modelo na API |
@@ -134,23 +136,25 @@ Oferecer uma experiência **IDE-first**, começando com um fluxo web **assistido
 
 ## 7. Experimentos de descoberta (antes da implementação extensa)
 
+> **Ordem obrigatória do projeto:** POC-01 → POC-02 → POC-03 → POC-05/06, **sempre no Antigravity IDE**. A POC-04 (VS Code) é uma trilha posterior de portabilidade e não bloqueia desenvolvimento, testes ou publicação inicial no Open VSX.
+
 Os experimentos abaixo são **sequenciais e com registro de evidências**. Executar apenas em contas e ambientes próprios/autorizados.
 
 ### POC-01 — Inventário e versão dos hosts
 
-**Procedimento:** registrar VS Code e Antigravity IDE instalados, versões, SO, disponibilidade da paleta de comandos, navegador integrado e versão do mecanismo de extensões.
+**Procedimento:** registrar **Antigravity IDE** instalado, versão, SO, disponibilidade da paleta de comandos, navegador integrado e versão do mecanismo de extensões. Não exigir instalação de VS Code. Registrar outros hosts apenas se forem testados depois.
 
 **Saída:** `docs/experiments/compatibility-matrix.md` com host, versão, SO, data e resultado.
 
 **Aceitação:** matriz preenchida; recursos não existentes marcados como `unsupported`, nunca assumidos.
 
-### POC-02 — Gemini Web no navegador integrado do VS Code
+### POC-02 — Gemini Web no navegador integrado do Antigravity IDE
 
-**Procedimento:** abrir manualmente `https://gemini.google.com/app` pelo comando **Browser: Open Integrated Browser**, navegar no site e realizar o login pela interface oficial. Se falhar, testar navegador externo para distinguir problema de conta versus incompatibilidade do navegador embutido.
+**Procedimento:** **no Antigravity IDE**, verificar primeiro se existe um comando equivalente a **Browser: Open Integrated Browser**. Se disponível, abrir manualmente `https://gemini.google.com/app`, navegar e realizar login pela interface oficial. Se o comando estiver ausente ou falhar, marcar como `unsupported` ou `fail`, testar o navegador externo e registrar o limite; **não presumir** que o Antigravity implementa o recurso do VS Code.
 
 **Não fazer:** injetar scripts de login, acessar cookie jar, enfraquecer políticas de segurança ou desativar proteções.
 
-**Aceitação:** página utilizável, sem interceptação de credenciais; registrar falhas como bloqueios legítimos.
+**Aceitação:** página utilizável **no Antigravity IDE**, sem interceptação de credenciais; registrar ausências e falhas como resultados legítimos, não como motivo para contornar proteções.
 
 ### POC-03 — Disponibilidade e interação com Argon
 
@@ -158,11 +162,11 @@ Os experimentos abaixo são **sequenciais e com registro de evidências**. Execu
 
 **Aceitação:** pelo menos uma conversa bem-sucedida com o Argon **dentro** do navegador integrado; guardar evidências anonimizadas. Se não funcionar, registrar o bloqueio e interromper hipóteses dependentes.
 
-### POC-04 — Repetição no Antigravity IDE
+### POC-04 — Compatibilidade com VS Code (posterior e opcional)
 
-**Procedimento:** verificar se o host oferece navegador integrado próprio e se suporta os mesmos comandos/experiências. Nunca presumir que um fork expõe APIs idênticas.
+**Procedimento:** **após a validação no Antigravity IDE**, verificar em VS Code se o mesmo VSIX abre o navegador integrado, apresenta a interface e suporta os comandos da extensão. Essa validação pode ser executada por colaboradores; **não requer que o mantenedor programe no VS Code**.
 
-**Aceitação:** resultado explícito `pass/fail/unsupported` com versão e reprodução.
+**Aceitação:** resultado explícito `pass/fail/unsupported` com versão e reprodução. A ausência do VS Code **não bloqueia** o MVP direcionado ao Antigravity.
 
 ### POC-05 — Fronteira extensão ↔ navegador
 
@@ -173,7 +177,7 @@ Os experimentos abaixo são **sequenciais e com registro de evidências**. Execu
 - Há separação clara entre ferramentas de **agentes nativos do VS Code** e APIs acessíveis às extensões?
 - Os termos do Google permitem o fluxo de integração pretendido?
 
-**Aceitação:** decisão documentada com link para API e testes; **não** considerar `executeCommand` interno/não documentado como contrato estável de produção.
+**Aceitação:** decisão documentada com link para API e testes **no Antigravity IDE**; **não** considerar `executeCommand` interno/não documentado como contrato estável de produção.
 
 **Bloqueio:** se não houver canal permitido para integração bidirecional, **não** implementar automação por sessão/cookies/endpoints privados. Prosseguir somente com modo assistido.
 
@@ -198,13 +202,13 @@ Cada POC cria um arquivo com: `ID`, `data`, `SO`, `versões`, `pré-condições`
 | Gate | Pré-requisito | Decisão |
 |---|---|---|
 | **G0 — Discovery** | H-01/H-02 registrados e cenários definidos | Iniciar testes |
-| **G1 — Web utilizável** | POC-02 + POC-03 aprovadas | Construir UX de abertura/navegação em host compatível |
+| **G1 — Web utilizável** | POC-02 + POC-03 aprovadas **no Antigravity** (ou fallback externo viável) | Construir UX de abertura/navegação para Antigravity primeiro |
 | **G2 — MVP útil sem automação web** | POC-06, diff, consentimento e testes básicos | Lançar beta **Web Assistido** se houver valor claro |
 | **G3 — Integração bidirecional** | Canal técnico permitido, documentado, testável e compatível com termos | Considerar sincronização avançada |
 | **G4 — Agente autônomo** | G3 **ou** API oficial; tool-calling e permissões testados | Lançar funções de agente com nome correto |
 | **G5 — Publicação** | Segurança, compatibilidade, licença, documentação e revisão das lojas | Publicar nas lojas aprovadas |
 
-**Critério de pivot:** se G3 falhar, Argonauta pode continuar como assistente web **manual** + agente via **API oficial**, mas **não** será anunciado como “Argon web autônomo no VS Code”.
+**Critério de pivot:** se G3 falhar, Argonauta pode continuar como assistente web **manual** + agente via **API oficial**, mas **não** será anunciado como “Argon web autônomo no Antigravity IDE”.
 
 ## 9. Escopo funcional por prioridade
 
@@ -272,11 +276,13 @@ Legenda: **P0** = necessário para MVP; **P1** = próxima versão; **P2** = futu
 
 ### 10.1 Stack inicial
 
+**Todas as tarefas de programação, depuração e validação do mantenedor ocorrerão dentro do Antigravity IDE.** `@types/vscode` e ferramentas do ecossistema VS Code podem ser usados como bibliotecas/SDKs; isso não implica utilizar o aplicativo VS Code.
+
 - **TypeScript + Node.js** para Extension Host.
-- **VS Code Extension API** para comandos, seleção, arquivos, edições, terminal e storage.
+- **API de extensões compatível com VS Code, conforme disponibilizada pelo Antigravity IDE**, para comandos, seleção, arquivos, edições, terminal e storage. Testar cada capacidade no host real.
 - **WebviewView** ou **WebviewPanel** para UI própria com CSP restritiva.
 - **Bundler:** `esbuild` inicialmente, com testes em CI.
-- **Testes:** unitários em Vitest (se compatível com o ambiente escolhido) e integração usando o harness oficial do VS Code.
+- **Testes:** unitários em Vitest (se compatível com o ambiente escolhido); integração executada **no Antigravity IDE**, com harness adaptado à sua implementação. O harness oficial do VS Code poderá servir de referência, mas não comprova execução no Antigravity.
 - **Versão mínima da API:** definir após inventário dos hosts; **não inventar compatibilidade**.
 - **Sem servidor próprio no MVP.** Nenhuma telemetria por padrão.
 
@@ -284,7 +290,7 @@ Legenda: **P0** = necessário para MVP; **P1** = próxima versão; **P2** = futu
 
 ```text
 ┌──────────────────────────────────────────────────────────┐
-│                    VS Code / Antigravity IDE             │
+│           Antigravity IDE (host principal)               │
 │  Command Palette · Editor · Workspace · Terminal        │
 └────────────────────────┬─────────────────────────────────┘
                          │ VS Code API
@@ -409,7 +415,7 @@ argonauta/
 
 ## 12. Critérios de aceite do MVP (Definition of Done)
 
-- [ ] Extensão inicia no VS Code suportado, sem erros no console.
+- [ ] Extensão inicia **no Antigravity IDE suportado**, sem erros no console.
 - [ ] Host e capacidades detectados sem dependência obrigatória de comandos internos não documentados.
 - [ ] `Argonauta: Open` abre painel próprio.
 - [ ] `Argonauta: Ask About Selection` mostra seleção e metadados antes de compartilhar.
@@ -423,7 +429,7 @@ argonauta/
 - [ ] Modo `Web Assisted` identificado na UI, README e descrição da loja.
 - [ ] Testes unitários, lint, empacotamento VSIX e checagens de segurança aprovados.
 - [ ] `README`, `SECURITY`, licença, matriz de suporte e changelog revisados.
-- [ ] Validação manual documentada em VS Code; Antigravity entra na lista de suporte **somente se testado**.
+- [ ] Validação manual documentada **no Antigravity IDE**. VS Code só entra na lista de suporte **quando efetivamente testado**; não é requisito do MVP.
 
 **MVP não exige automação do Gemini Web.** Ela é objetivo de pesquisa de alto risco, não critério de aceite do primeiro release.
 
@@ -440,11 +446,11 @@ argonauta/
 
 | Ambiente | POC navegador/login | MVP funcional | Publicação |
 |---|---|---|---|
-| VS Code Stable / Windows | Obrigatório | Obrigatório | Primeiro alvo |
-| Antigravity IDE / Windows | Obrigatório | Obrigatório antes de anunciar suporte | Open VSX após validação |
-| VS Code Stable / Linux | Desejável | Beta | Posterior |
-| VS Code Stable / macOS | Desejável | Beta | Posterior |
-| IDEs VS Code-compatible adicionais | Sob demanda | Não presumir | Futuro |
+| **Antigravity IDE / Windows** | **Obrigatório / primeiro** | **Obrigatório / primeiro** | **Open VSX após validação** |
+| Antigravity IDE / Linux ou macOS | Desejável | Beta, se testado | Posterior |
+| VS Code Stable / Windows | Opcional durante MVP | Somente após homologação | Visual Studio Marketplace depois |
+| VS Code Stable / Linux ou macOS | Posterior | Não presumir | Futuro |
+| Outras IDEs compatíveis | Sob demanda | Não presumir | Futuro |
 
 ### 13.3 Checklist de evidência
 
@@ -480,7 +486,7 @@ argonauta/
 - [ ] UI refinada, acessível e com suporte a tema.
 - [ ] Guardrails e revisão de segurança.
 - [ ] Docs, issues, changelog, CI, screenshots e vídeo.
-- [ ] Testes no Antigravity e VS Code reais.
+- [ ] Testes reais **no Antigravity IDE**; VS Code quando houver disponibilidade e for pertinente à expansão.
 - [ ] Release GitHub pré-lançamento.
 
 **Entrega:** beta público, claramente descrito como **Web Assisted**.
@@ -509,7 +515,7 @@ argonauta/
 - [ ] Revisar nome/ícones/descritivos para evitar confusão de marca.
 - [ ] Empacotar **um VSIX reprodutível**.
 - [ ] Publicar no **Open VSX**, após requisitos e testes do host compatível.
-- [ ] Publicar separadamente no **Visual Studio Marketplace**.
+- [ ] Publicar separadamente no **Visual Studio Marketplace**, **somente depois** de validar suporte real a VS Code; não condicionar o lançamento no Open VSX a essa etapa.
 - [ ] README e release notes em inglês com tabela de capacidades reais.
 - [ ] Divulgar demo no GitHub/X/Reddit/Hacker News respeitando as regras das comunidades.
 
@@ -519,7 +525,7 @@ argonauta/
 
 ### Mensagens permitidas se comprovadas
 
-- “Argonauta helps you bring selected code context to Gemini Web from VS Code.”
+- “Argonauta helps you bring selected code context to Gemini Web from Antigravity IDE.”
 - “Review and apply generated patches from your IDE.”
 - “Works with the Gemini Web session you access in your own browser” (somente após validar o fluxo específico).
 
@@ -561,7 +567,7 @@ Essas promessas **não devem ser usadas** sem documentação técnica reproduzí
 |---|---|---|---|
 | ADR-001 | Licença | MIT ou Apache-2.0, a decidir | Antes do commit público inicial |
 | ADR-002 | Publisher ID | A definir pelo mantenedor | Antes da publicação |
-| ADR-003 | Versão mínima do VS Code | Definir pela matriz de compatibilidade | Após POC-01 |
+| ADR-003 | Versão/API mínima do host Antigravity IDE | Definir pela matriz de compatibilidade | Após POC-01 |
 | ADR-004 | Tecnologia de UI | Webview simples primeiro, framework se necessário | Após POC-05 |
 | ADR-005 | Navegador integrado versus externo | Seleção de modo baseada em recursos verificados | Após POC-02/04 |
 | ADR-006 | Política de importação de patch | Unified diff, com parser restritivo e preview | Durante M1 |
@@ -576,10 +582,10 @@ Essas promessas **não devem ser usadas** sem documentação técnica reproduzí
 1. Salvar este documento como `PRD.md` na raiz do projeto.
 2. Não desenvolver um bridge para Gemini Web ainda.
 3. Preparar `docs/experiments/compatibility-matrix.md`.
-4. Abrir VS Code e Antigravity IDE e registrar as versões.
-5. Executar primeiro **POC-02**, de modo manual: `Browser: Open Integrated Browser` → `https://gemini.google.com/app` → verificar login e seletor de modelos.
-6. Registrar resultado e repetir em Antigravity (POC-04) **somente se o recurso existir**.
-7. Trazer os resultados para escolher o próximo passo técnico, sem forçar uma arquitetura prematura.
+4. Abrir **somente o Antigravity IDE** e registrar sua versão e o sistema operacional.
+5. Executar primeiro **POC-01**: verificar se a paleta de comandos oferece um navegador integrado e identificar seu nome exato (se existir).
+6. Se existir, executar **POC-02/03**: abrir `https://gemini.google.com/app`, testar o login e verificar a seleção do Argon. Se não existir, registrar `unsupported` e avaliar fluxo assistido com navegador externo.
+7. Trazer os resultados para escolher o próximo passo técnico. **Não é necessário instalar VS Code para desenvolver o Argonauta.**
 
 ## 19. Fontes oficiais consultadas (baseline em 14/10/2026)
 
