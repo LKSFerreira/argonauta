@@ -186,7 +186,7 @@ A POC-05B deve usar `chrome.runtime.connectNative()` em um service worker Manife
 
 ### 6.3 Sequência de inicialização
 
-1. Chrome inicia ou ativa o service worker da extensão.
+1. O usuário aciona manualmente **Conectar ponte** na extensão Chrome.
 2. O service worker chama `connectNative()`.
 3. Chrome valida o manifesto e inicia o host `com.argonauta.poc05b`.
 4. O host valida a origem Chrome recebida na linha de comando.
@@ -198,7 +198,8 @@ Se a extensão Chrome não estiver conectada, o comando da IDE deve retornar `CH
 
 ### 6.4 Reconexão e encerramento
 
-- O service worker poderá tentar reconexão com atrasos crescentes, por exemplo `1 s`, `2 s`, `5 s`, `10 s` e `30 s`.
+- A primeira conexão será sempre manual para facilitar a depuração. Uma reconexão automática posterior só poderá ser adicionada após aprovação específica.
+- Se aprovada em etapa posterior, a reconexão poderá usar atrasos crescentes, por exemplo `1 s`, `2 s`, `5 s`, `10 s` e `30 s`.
 - Após cinco falhas consecutivas, novas tentativas automáticas devem parar até uma ação do usuário ou novo evento de inicialização.
 - EOF ou erro em `stdin` significa que o Chrome encerrou a conexão nativa.
 - Ao perder o Chrome, o host deve rejeitar solicitações pendentes, enviar `CHROME_DESCONECTADO` aos clientes autenticados, fechar sockets e encerrar.
@@ -233,21 +234,36 @@ A extensão do Antigravity lerá a configuração somente para importar o segred
 
 ### 7.3 Handshake proposto
 
-Primeira mensagem da IDE:
+O host inicia o handshake com um desafio imprevisível gerado por fonte criptográfica. A autenticação usará um transcript canônico, com ordem e codificação de campos definidas antes da Etapa 3, para impedir ambiguidades de serialização.
+
+Primeira mensagem do host:
+
+```json
+{
+  "tipo": "DESAFIO_AUTENTICACAO",
+  "idRequisicao": "uuid",
+  "versaoProtocolo": "1.0",
+  "nonceHost": "base64url imprevisível",
+  "instanteHost": "2026-10-14T12:00:00.000Z"
+}
+```
+
+Resposta da IDE:
 
 ```json
 {
   "tipo": "AUTENTICAR",
-  "idRequisicao": "uuid",
+  "idRequisicao": "mesmo uuid",
   "versaoProtocolo": "1.0",
   "idInstalacao": "identificador aleatório",
-  "instante": "2026-10-14T12:00:00.000Z",
-  "nonceCliente": "base64url",
-  "prova": "HMAC-SHA256 em base64url"
+  "nonceHost": "mesmo desafio recebido",
+  "nonceCliente": "base64url imprevisível",
+  "instanteCliente": "2026-10-14T12:00:00.000Z",
+  "provaCliente": "HMAC-SHA256 do transcript canônico em base64url"
 }
 ```
 
-Resposta do host:
+Confirmação autenticada do host:
 
 ```json
 {
@@ -255,15 +271,19 @@ Resposta do host:
   "idRequisicao": "mesmo uuid",
   "versaoProtocolo": "1.0",
   "idSessao": "uuid",
-  "nonceHost": "base64url",
-  "provaHost": "HMAC-SHA256 em base64url"
+  "nonceHost": "mesmo desafio",
+  "nonceCliente": "mesmo nonce recebido",
+  "provaHost": "HMAC-SHA256 do transcript canônico de confirmação em base64url"
 }
 ```
 
 Regras:
 
 - tolerância máxima de relógio: 30 segundos;
-- nonce de uso único durante a vida do processo;
+- desafio e nonces de uso único durante a vida do processo;
+- cache de desafios consumidos ou expirados para impedir replay;
+- autenticação mútua: a IDE prova conhecimento do segredo e valida a prova independente do host;
+- domínio, nomes, ordem, codificação e separadores do transcript HMAC serão fixos e cobertos por vetores de teste;
 - comparação de HMAC em tempo constante;
 - falha encerra o socket sem revelar qual campo estava incorreto;
 - no máximo três tentativas de autenticação por conexão;
@@ -436,7 +456,7 @@ Todo o trabalho será realizado e depurado no Antigravity IDE. O VS Code não se
 
 - criar uma extensão mínima TypeScript em diretório novo;
 - registrar um comando sem efeitos externos;
-- registrar em log `vscode.version`, `process.version`, plataforma e local de execução;
+- registrar no relatório `vscode.version`, `process.version` e se a execução é desktop, local e não remota, sem expor caminhos ou identificadores do ambiente;
 - confirmar acesso a `node:net`, `node:crypto`, `ExtensionContext.secrets` e `globalStorageUri`;
 - confirmar que `extensionKind: ["ui"]` executa localmente;
 - interromper a POC se o host for web-only ou remoto.
@@ -453,7 +473,8 @@ Todo o trabalho será realizado e depurado no Antigravity IDE. O VS Code não se
 - implementar servidor no Native Messaging Host e cliente na extensão do Antigravity;
 - reutilizar framing uint32 + JSON UTF-8;
 - validar fragmentação, concatenação, limites e backpressure;
-- medir e verificar DACL e impossibilidade de acesso remoto;
+- inspecionar a DACL efetiva do pipe e registrar sua SDDL sem identificadores pessoais;
+- provar por testes negativos o bloqueio de clientes não autorizados e de acesso remoto;
 - não implementar fallback TCP.
 
 ### Etapa 3 — Autenticação
@@ -468,6 +489,7 @@ Todo o trabalho será realizado e depurado no Antigravity IDE. O VS Code não se
 - criar uma cópia evolutiva da extensão Chrome em novo diretório de experimento;
 - usar nova identidade fixa e novo host `com.argonauta.poc05b`;
 - adicionar service worker com `connectNative()`;
+- oferecer ação manual **Conectar ponte** para iniciar a conexão durante a depuração;
 - manter somente a permissão `nativeMessaging`;
 - implementar reconexão limitada e encerramento limpo.
 
@@ -625,8 +647,15 @@ A implementação não deve começar ou avançar quando:
 - [Microsoft — segurança e direitos de acesso de Named Pipes](https://learn.microsoft.com/windows/win32/ipc/named-pipe-security-and-access-rights)
 - [Microsoft — comunicação entre processos no Windows](https://learn.microsoft.com/windows/apps/develop/communication/interprocess-communication)
 
-## 17. Decisão pendente
+## 17. Aprovação incremental
 
-Este documento é somente um plano. Nenhum código de produção, extensão, serviço, script de instalação ou chave de Registro foi criado ou executado para a POC-05B.
+Em 14/10/2026, a arquitetura recebeu aprovação condicional com quatro revisões obrigatórias incorporadas neste documento:
 
-A implementação deverá aguardar aprovação explícita desta arquitetura.
+1. inspeção efetiva da DACL e testes de bloqueio local não autorizado e remoto;
+2. desafio imprevisível iniciado pelo host, transcript HMAC-SHA256 canônico, proteção contra replay e autenticação mútua;
+3. conexão Chrome manual durante a depuração inicial;
+4. aprovação separada antes de cada etapa.
+
+A autorização atual cobre exclusivamente a **Etapa 0 — Gate de compatibilidade do Antigravity**. Nenhum Named Pipe, Native Messaging Host da POC-05B, script de instalação ou chave de Registro deve ser criado nesta etapa.
+
+O avanço para a Etapa 1 deverá aguardar nova aprovação explícita.
