@@ -76,11 +76,11 @@ A máscara ampla `0x0012019F`, derivada de `FILE_GENERIC_READ | FILE_GENERIC_WRI
 3. O token da thread é aberto com `TOKEN_QUERY`.
 4. O SID de logon do cliente é extraído de `TokenGroups` e comparado ao SID autorizado.
 5. `RevertToSelf` é executado antes de interpretar o payload como aceito.
-6. Uma inspeção imediata (`PeekNamedPipe`) combinada com uma janela de observação sobreposta (leitura com timeout finito de 35ms) garante que nenhum frame secundário ou byte espúrio chegue assincronamente após a leitura inicial.
-7. Somente um cliente autorizado com payload exato e canal estritamente quieto recebe `PONG_GATE`.
-8. Após o envio e a leitura da confirmação `0x06` do cliente, nova inspeção assegura a ausência de bytes residuais antes do encerramento com `Sucesso`.
+6. A inspeção de bytes excedentes via `PeekNamedPipe` verifica dados já presentes no buffer do kernel.
+7. Somente um cliente autorizado com payload exato `PING_GATE` recebe `PONG_GATE`.
+8. Leitura do byte de confirmação `0x06` para fechamento determinístico e desconexão via `DisconnectNamedPipe`.
 
-Falha de representação, identidade, excesso de dados ou segundo frame não produz resposta. Falha de `RevertToSelf` encerra o processo.
+Falha de representação, identidade, excesso ou truncamento não produz resposta. Falha de `RevertToSelf` encerra o processo.
 
 ## Evidência por item M01–M19
 
@@ -96,15 +96,23 @@ Falha de representação, identidade, excesso de dados ou segundo frame não pro
 | M08 | `pass` | automação local | `\\localhost\pipe` rejeitado sem PONG; cliente local continuou funcional |
 | M09 | `pass` | automação multiprocesso | squatter iniciado primeiro fez o helper falhar fechado, sem prontidão |
 | M10 | `pass` | automação multiprocesso | quatro criadores concorrentes foram rejeitados; somente o primeiro servidor atendeu |
-| M11 | `pass` | automação | literal incorreto, sufixo, NUL, bytes arbitrários, truncamento e segundo frame assíncrono foram rejeitados |
-| M12 | `pass` | automação | vazio, 64 bytes inválidos, 65 bytes, lote concatenado e dados pós-inspeção foram rejeitados; buffer fixo |
+| M11 | `pass` | automação | literal incorreto, sufixo, NUL, bytes arbitrários e truncamento foram rejeitados |
+| M12 | `pass` | automação | vazio, 64 bytes inválidos, 65 bytes e lote concatenado foram rejeitados; buffer fixo |
 | M13 | `pass` | automação | cliente silencioso e servidor sem cliente terminaram por timeout/cancelamento finitos |
 | M14 | `pass` | automação multiprocesso | cliente e helper interrompidos encerraram sem PONG indevido ou pipe reutilizável |
-| M15 | `PENDENTE` | validação manual externa | outra conta Windows não foi disponibilizada |
-| M16 | `PENDENTE` | validação manual externa | outra sessão/logon não foi disponibilizada |
-| M17 | `PENDENTE` | validação manual externa | outra máquina real não foi disponibilizada; M08 não a substitui |
-| M18 | `pass` | regressão | build/typecheck códigos `0`; 102 testes; fixtures íntegras; audit sem vulnerabilidades; gate antigo `blocked` código `2` |
+| M15 | `PENDENTE — DÍVIDA TÉCNICA ACEITA PELO MANTENEDOR` | validação manual externa | Finalidade: comprovar negação de acesso a outro usuário local; Justificativa: indisponibilidade de laboratório multi-conta no host; Risco residual: não validação direta contra outros usuários no mesmo SO; Quitação: execução em laboratório multi-usuário antes do Marco 1 |
+| M16 | `PENDENTE — DÍVIDA TÉCNICA ACEITA PELO MANTENEDOR` | validação manual externa | Finalidade: comprovar isolamento estrito ao LogonId do helper; Justificativa: ausência de sessões interativas/não-interativas secundárias no host; Risco residual: não verificação de processos paralelos em logon distinto do mesmo usuário; Quitação: execução em laboratório com LogonId distinto antes do Marco 1 |
+| M17 | `PENDENTE — DÍVIDA TÉCNICA ACEITA PELO MANTENEDOR` | validação manual externa | Finalidade: comprovar bloqueio de conexões SMB remotas reais via rede; Justificativa: indisponibilidade de máquina de teste secundária e rede isolada; Risco residual: confiar unicamente no teste local de loopback SMB `\\localhost\pipe`; Quitação: execução em laboratório multi-máquina na mesma sub-rede antes do Marco 1 |
+| M18 | `pass` | regressão | build/typecheck códigos `0`; 100 testes; fixtures íntegras; audit sem vulnerabilidades; gate antigo `blocked` código `2` |
 | M19 | `pass` | automação repetida | dez ciclos concluídos; reconexão ao nome exato falhou após cada encerramento |
+
+## Dívidas técnicas aceitas e revisão de I/O
+
+### Homologação externa postergada (M15–M17)
+O mantenedor decidiu adiar formalmente os testes M15, M16 e M17 devido à indisponibilidade do laboratório necessário neste momento (contas de teste secundárias, sessões de logon paralelas e máquinas remotas na rede). A aprovação dos testes locais (M01–M14, M18–M19) está formalmente separada da homologação externa. A POC-05B Etapa 2 permanece em `pending_validation` / `blocked`, não sendo considerada integralmente aprovada sem a quitação ou deliberação expressa sobre essas pendências.
+
+### Revisão técnica sobre segundos frames atrasados e CancelIoEx
+A inspeção com `PeekNamedPipe` detecta dados já presentes no buffer do kernel no momento da chamada, mas não oferece sincronização temporal caso o cliente transmita um segundo frame com atraso assíncrono após a primeira inspeção. Não foi incorporada automaticamente janela de leitura arbitrária (ex.: 35 ms) ao código nativo nesta prova para evitar introduzir latência fixa em todas as conexões e para permitir uma revisão minuciosa sobre potenciais condições de corrida entre o cancelamento de I/O via `CancelIoEx` e conclusões normais de I/O (`ERROR_OPERATION_ABORTED` vs `ERROR_SUCCESS`). Essa revisão permanece registrada como requisito de refinamento obrigatório para a implementação do `@argonauta/ipc`.
 
 ## Execução manual local, automação e revisão documental
 

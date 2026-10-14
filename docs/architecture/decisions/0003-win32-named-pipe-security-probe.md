@@ -174,15 +174,13 @@ Não recomendado para esta prova. Aumentaria o acoplamento com ABI/build do Node
 
 ## Recomendação
 
-A arquitetura candidata continua sendo o sidecar Win32 nativo mínimo, não um addon. Essa recomendação permanece `proposed`: existe evidência local do helper, mas faltam os testes externos e a decisão expressa do mantenedor.
+A arquitetura candidata continua sendo o sidecar Win32 nativo mínimo, não um addon. Essa recomendação permanece `proposed`: existe evidência local positiva do helper nativo (M01–M14, M18–M19 em `pass`), mas a homologação externa (M15–M17) foi postergada como dívida técnica aceita pelo mantenedor.
 
-Para retomar, o mantenedor precisa aprovar uma destas opções:
+### Dívidas técnicas aceitas (M15–M17)
+O mantenedor decidiu adiar formalmente os testes M15 (outra conta Windows), M16 (outra sessão de logon) e M17 (máquina remota via SMB) devido à indisponibilidade de infraestrutura de laboratório multi-máquina e multi-usuário no ambiente atual. A aprovação dos testes locais está formalmente separada da homologação externa. A POC-05B Etapa 2 permanece em `pending_validation` / `blocked`, não sendo declarada concluída sem a quitação ou deliberação sobre esses critérios no Marco 1.
 
-1. disponibilizar MSVC Build Tools com o componente C++ x64/x86 e Windows SDK;
-2. indicar um toolchain Win32 já existente em caminho não padrão;
-3. autorizar uma investigação separada do sidecar .NET/P/Invoke.
-
-Mesmo após uma prova local positiva, a POC-05B Etapa 2 deve permanecer `pending_validation` enquanto testes reais com outra máquina, outra conta e outra sessão/logon não forem concluídos. No estado atual, permanece `blocked`.
+### Revisão técnica de I/O, timing e CancelIoEx
+A verificação por `PeekNamedPipe` atesta a ausência de bytes já presentes no buffer do kernel, mas não garante a rejeição de segundos frames que cheguem assincronamente com atraso após a primeira inspeção. Foi deliberado não incorporar automaticamente janelas arbitrárias de temporização (ex.: 35 ms) no código nativo desta prova, para não introduzir latência desnecessária e para permitir que a implementação definitiva do `@argonauta/ipc` trate exaustivamente potenciais condições de corrida entre cancelamento via `CancelIoEx` e conclusões normais de I/O.
 
 ## Referências
 

@@ -32,8 +32,9 @@
 ## Riscos residuais
 
 - A DACL do pipe temporário criado por `node:net` foi inspecionada e reprovada: `Everyone` e `Anonymous` possuem leitura, o SID de logon não aparece e `\\localhost\pipe` consegue conectar.
-- O probe Win32 comprovou localmente descritor explícito, máscara sem `FILE_CREATE_PIPE_INSTANCE` e bloqueio de `\\localhost\pipe`; outra conta, outra sessão/logon e máquina remota real permanecem pendentes.
-- A adoção do helper nativo e o transporte definitivo ainda dependem de aprovação arquitetural, distribuição segura e testes externos.
+- O probe Win32 comprovou localmente descritor explícito, máscara sem `FILE_CREATE_PIPE_INSTANCE` e bloqueio de `\\localhost\pipe`; os testes de outra conta (M15), outra sessão/logon (M16) e máquina remota real (M17) foram adiados como dívidas técnicas aceitas pelo mantenedor por ausência de laboratório multi-máquina/multi-usuário.
+- A inspeção de dados espúrios via `PeekNamedPipe` não garante a detecção de frames que cheguem com atraso assíncrono após a primeira leitura; o tratamento robusto de quiescência, encerramento de escrita e cancelamento de I/O via `CancelIoEx` permanece como requisito de desenho do transporte definitivo `@argonauta/ipc`.
+- A adoção do helper nativo e o transporte definitivo ainda dependem de aprovação arquitetural, distribuição segura e quitação das dívidas técnicas externas.
 - O host da POC-05A depende do `node.exe` disponível no `PATH` herdado pelo Chrome.
 - Uma instalação registrada deixa de funcionar quando o repositório é movido, até reinstalação manual.
 - Testes automatizados não substituem a validação real no Antigravity IDE e no Chrome.
