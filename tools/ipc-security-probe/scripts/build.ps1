@@ -35,3 +35,15 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 Write-Output 'COMPILACAO_WIN32=PASS'
+
+$fonteTeste = Join-Path $pastaProjeto 'tests\classificacao-io.test.cpp'
+$executavelTeste = Join-Path $pastaBuild 'classificacao-io.test.exe'
+$objetoTeste = Join-Path $pastaBuild 'classificacao-io.test.obj'
+$comandoTeste = '"' + $vsDevCmd + '" -no_logo -arch=x64 -host_arch=x64 && cl.exe /nologo /std:c++20 /W4 /WX /EHsc /permissive- /utf-8 /sdl /GS /guard:cf /O2 /MT /DUNICODE /D_UNICODE /D_WIN32_WINNT=0x0A00 "' + $fonteTeste + '" /Fe:"' + $executavelTeste + '" /Fo:"' + $objetoTeste + '" /link /INCREMENTAL:NO /DYNAMICBASE /NXCOMPAT /HIGHENTROPYVA /guard:cf'
+
+& cmd.exe /d /s /c $comandoTeste
+if ($LASTEXITCODE -ne 0) {
+    throw "A compilação do teste nativo de classificação falhou com código $LASTEXITCODE."
+}
+
+Write-Output 'COMPILACAO_TESTE_IO=PASS'

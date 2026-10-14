@@ -1,4 +1,5 @@
 #include "servidor-pipe-nomeado.hpp"
+#include "classificacao-io.hpp"
 
 #include <bcrypt.h>
 
@@ -16,55 +17,57 @@ inline constexpr std::string_view PING_GATE = "PING_GATE";
 inline constexpr std::string_view PONG_GATE = "PONG_GATE";
 inline constexpr std::uint8_t CONFIRMACAO_RECEBIMENTO = 0x06;
 
-enum class EstadoIo {
-    Concluida,
-    TempoEsgotado,
-    Desconectado,
-    Falha,
-};
+ResultadoIo consultarConclusaoIo(
+    HANDLE handle,
+    OVERLAPPED& sobreposto,
+    bool aposTimeout) {
+    DWORD bytesTransferidos = 0;
+    const BOOL concluiuComSucesso = GetOverlappedResult(
+        handle,
+        &sobreposto,
+        &bytesTransferidos,
+        FALSE);
+    const DWORD codigoErro = concluiuComSucesso != FALSE ? ERROR_SUCCESS : GetLastError();
 
-struct ResultadoIo final {
-    EstadoIo estado{EstadoIo::Falha};
-    DWORD bytes{0};
-    DWORD codigo{ERROR_SUCCESS};
-};
+    // A pilha contém OVERLAPPED e evento: nunca liberar enquanto houver I/O pendente.
+    if (concluiuComSucesso == FALSE && codigoErro == ERROR_IO_INCOMPLETE) {
+        ExitProcess(3);
+    }
+    return classificarConclusaoIo(
+        concluiuComSucesso,
+        bytesTransferidos,
+        codigoErro,
+        aposTimeout);
+}
 
 ResultadoIo aguardarIoSobreposto(HANDLE handle, OVERLAPPED& sobreposto, DWORD tempoLimiteMs) {
     const DWORD espera = WaitForSingleObject(sobreposto.hEvent, tempoLimiteMs);
     if (espera == WAIT_OBJECT_0) {
-        DWORD bytes = 0;
-        if (GetOverlappedResult(handle, &sobreposto, &bytes, FALSE) != FALSE) {
-            return {EstadoIo::Concluida, bytes, ERROR_SUCCESS};
-        }
-        const DWORD codigo = GetLastError();
-        if (codigo == ERROR_BROKEN_PIPE || codigo == ERROR_NO_DATA) {
-            return {EstadoIo::Desconectado, 0, codigo};
-        }
-        return {EstadoIo::Falha, 0, codigo};
+        return consultarConclusaoIo(handle, sobreposto, false);
     }
 
+    // Uma espera anormal não comprova término da operação sobreposta.
+    // Encerrar o processo é fail-closed e impede reutilizar memória em uso pelo kernel.
     if (espera != WAIT_TIMEOUT) {
-        return {EstadoIo::Falha, 0, GetLastError()};
-    }
-
-    if (CancelIoEx(handle, &sobreposto) == FALSE && GetLastError() != ERROR_NOT_FOUND) {
-        return {EstadoIo::Falha, 0, GetLastError()};
-    }
-
-    const DWORD esperaCancelamento = WaitForSingleObject(sobreposto.hEvent, tempoLimiteMs);
-    if (esperaCancelamento != WAIT_OBJECT_0) {
         ExitProcess(3);
     }
 
-    DWORD bytes = 0;
-    if (GetOverlappedResult(handle, &sobreposto, &bytes, FALSE) != FALSE) {
-        return {EstadoIo::TempoEsgotado, bytes, ERROR_SUCCESS};
+    if (CancelIoEx(handle, &sobreposto) == FALSE) {
+        const DWORD codigoCancelamento = GetLastError();
+        if (codigoCancelamento != ERROR_NOT_FOUND) {
+            // Não retornar com OVERLAPPED potencialmente pendente na pilha.
+            ExitProcess(3);
+        }
     }
-    const DWORD codigo = GetLastError();
-    if (codigo == ERROR_OPERATION_ABORTED || codigo == ERROR_BROKEN_PIPE || codigo == ERROR_NO_DATA) {
-        return {EstadoIo::TempoEsgotado, 0, codigo};
+
+    // CancelIoEx solicita cancelamento, mas não aguarda a conclusão da I/O.
+    const DWORD esperaConclusao = WaitForSingleObject(sobreposto.hEvent, tempoLimiteMs);
+    if (esperaConclusao != WAIT_OBJECT_0) {
+        ExitProcess(3);
     }
-    return {EstadoIo::Falha, 0, codigo};
+
+    // Se a I/O venceu a corrida de cancelamento, preservar seu sucesso e seus bytes.
+    return consultarConclusaoIo(handle, sobreposto, true);
 }
 
 template <typename Operacao>

@@ -9,6 +9,7 @@ import test from 'node:test';
 const pastaTestes = dirname(fileURLToPath(import.meta.url));
 const pastaProjeto = dirname(pastaTestes);
 const executavel = join(pastaProjeto, 'build', 'ipc-security-probe.exe');
+const executavelTesteIo = join(pastaProjeto, 'build', 'classificacao-io.test.exe');
 const cliente = join(pastaProjeto, 'client', 'diagnostic-client.mjs');
 const squatter = join(pastaTestes, 'squatter.mjs');
 const TEMPO_TESTE = 8_000;
@@ -121,6 +122,29 @@ async function iniciarEObterProntidao(opcoes) {
 if (process.platform !== 'win32') {
   test('probe Win32 indisponível fora do Windows', { skip: true }, () => {});
 } else {
+  const cenariosClassificacaoIo = [
+    'conclusao_antes_timeout',
+    'conclusao_apos_timeout',
+    'conclusao_zero_byte_apos_timeout',
+    'cancelamento_confirmado',
+    'desconexao_apos_timeout',
+    'desconexao_sem_timeout',
+    'falha_apos_timeout',
+    'cancelamento_inesperado',
+    'desconexao_no_data_apos_timeout',
+  ];
+
+  for (const cenario of cenariosClassificacaoIo) {
+    test(`I/O Win32: classifica ${cenario} sem perder a conclusão real`, async () => {
+      const processo = spawn(executavelTesteIo, [cenario], {
+        windowsHide: true,
+        stdio: ['ignore', 'pipe', 'pipe'],
+      });
+      const saida = await aguardarSaida(processo);
+      assert.equal(saida.codigo, 0, saida.stderr);
+    });
+  }
+
   test('M01–M06: cria e inspeciona o primeiro handle com política explícita', async () => {
     const { prontidao, saidaHelper } = await iniciarEObterProntidao();
 
@@ -296,6 +320,26 @@ if (process.platform !== 'win32') {
     assert.equal(saida.codigo, 2);
     assert.ok(Date.now() - inicio < 3_000);
     assert.match(saida.stdout, /"atendimento":"tempo_esgotado"/u);
+  });
+
+  test('M13: cancela repetidamente conexão sobreposta sem cliente', async () => {
+    for (let indice = 0; indice < 5; indice += 1) {
+      const { saidaHelper } = await iniciarEObterProntidao({ timeout: 300 });
+      const saida = await saidaHelper;
+      assert.equal(saida.codigo, 2);
+      assert.match(saida.stdout, /"atendimento":"tempo_esgotado"/u);
+    }
+  });
+
+  test('M13: cancela repetidamente leitura sobreposta de cliente silencioso', async () => {
+    for (let indice = 0; indice < 4; indice += 1) {
+      const { prontidao, saidaHelper } = await iniciarEObterProntidao({ timeout: 500 });
+      const resultadoCliente = await executarCliente(prontidao.caminhoPipe, 'silencioso');
+      assert.equal(resultadoCliente.respostaPong, false);
+      const saida = await saidaHelper;
+      assert.equal(saida.codigo, 2);
+      assert.match(saida.stdout, /"atendimento":"tempo_esgotado"/u);
+    }
   });
 
   test('M14: desconexão abrupta é controlada e não produz PONG_GATE', async () => {
