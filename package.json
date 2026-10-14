@@ -15,6 +15,7 @@
     "typecheck": "npm run typecheck --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
     "verificar:fixtures": "node scripts/verify-fixtures.mjs",
+    "verificar:ipc-security-gate": "node scripts/windows/verify-ipc-security-gate.mjs",
     "verificar": "npm run typecheck && npm run test && npm run verificar:fixtures"
   }
 }
