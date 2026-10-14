@@ -271,41 +271,6 @@ ResultadoAtendimento ServidorPipeNomeado::atender(DWORD tempoLimiteMs) {
         return resultado;
     }
 
-    // Janela de observação para detectar frames adicionais que cheguem assincronamente
-    // logo após a leitura inicial, impedindo qualquer resposta caso haja dados espúrios a caminho.
-    constexpr DWORD JANELA_INSPECAO_BYTES_MS = 35;
-    std::uint8_t byteSobressalente = 0;
-    const ResultadoIo inspecaoSobressalente = ler(
-        pipe_.obter(),
-        &byteSobressalente,
-        1,
-        JANELA_INSPECAO_BYTES_MS);
-    if (inspecaoSobressalente.estado == EstadoIo::Concluida && inspecaoSobressalente.bytes > 0) {
-        resultado.estado = EstadoAtendimento::MensagemInvalida;
-        return resultado;
-    }
-    if (inspecaoSobressalente.estado == EstadoIo::Desconectado) {
-        resultado.estado = EstadoAtendimento::ClienteDesconectado;
-        resultado.codigoWin32 = inspecaoSobressalente.codigo;
-        return resultado;
-    }
-    if (inspecaoSobressalente.estado == EstadoIo::Falha) {
-        resultado.estado = EstadoAtendimento::FalhaIo;
-        resultado.codigoWin32 = inspecaoSobressalente.codigo;
-        return resultado;
-    }
-
-    DWORD bytesRestantes = 0;
-    if (PeekNamedPipe(pipe_.obter(), nullptr, 0, nullptr, &bytesRestantes, nullptr) == FALSE) {
-        resultado.estado = EstadoAtendimento::FalhaIo;
-        resultado.codigoWin32 = GetLastError();
-        return resultado;
-    }
-    if (bytesRestantes != 0) {
-        resultado.estado = EstadoAtendimento::MensagemInvalida;
-        return resultado;
-    }
-
     const std::string_view mensagemRecebida(mensagem.data(), totalLido);
     if (mensagemRecebida != PING_GATE) {
         resultado.estado = EstadoAtendimento::MensagemInvalida;
@@ -338,14 +303,6 @@ ResultadoAtendimento ServidorPipeNomeado::atender(DWORD tempoLimiteMs) {
             ? EstadoAtendimento::TempoEsgotado
             : EstadoAtendimento::FalhaIo;
         resultado.codigoWin32 = leituraConfirmacao.codigo;
-        return resultado;
-    }
-
-    DWORD bytesAposConfirmacao = 0;
-    if (PeekNamedPipe(pipe_.obter(), nullptr, 0, nullptr, &bytesAposConfirmacao, nullptr) != FALSE &&
-        bytesAposConfirmacao != 0) {
-        resultado.estado = EstadoAtendimento::MensagemInvalida;
-        DisconnectNamedPipe(pipe_.obter());
         return resultado;
     }
 

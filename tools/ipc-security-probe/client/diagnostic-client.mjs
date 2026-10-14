@@ -15,7 +15,6 @@ function frameParaModo(modo) {
   switch (modo) {
     case 'valido':
     case 'fragmentado':
-    case 'segundo-frame':
       return criarFrameDiagnostico('PING_GATE');
     case 'invalido':
       return criarFrameDiagnostico('PING_FAIL');
@@ -76,15 +75,6 @@ export function executarClienteDiagnostico({
         socket.write(frame.subarray(0, 1));
         setTimeout(() => socket.write(frame.subarray(1, 5)), 20);
         setTimeout(() => socket.write(frame.subarray(5)), 40);
-        return;
-      }
-      if (modo === 'segundo-frame') {
-        socket.write(frame);
-        setTimeout(() => {
-          if (!socket.destroyed) {
-            socket.write(criarFrameDiagnostico('PING_GATE'));
-          }
-        }, 15);
         return;
       }
       if (modo === 'abrupto') {
