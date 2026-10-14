@@ -7,21 +7,21 @@
 - [x] Registrar o PRD e estruturar a documentação inicial.
 - [x] Definir TypeScript + Node.js 20+ como stack planejada da extensão.
 - [x] Criar matriz de compatibilidade e plano de discovery.
+- [x] Executar POC-01, POC-02 e POC-05A com evidências registradas.
+- [ ] Executar POC-05B (comunicação de ponta a ponta Antigravity IDE ↔ Chrome via IPC local).
 - [ ] Confirmar disponibilidade de nome, namespace e publisher.
-- [ ] Executar POC-01 a POC-05 com evidências anonimizadas.
 - [ ] Decidir os Gates G1 e G3 antes de prometer automação web.
 
-## Próxima entrega: relatório de viabilidade
+## Próxima entrega: viabilidade de ponta a ponta (POC-05B)
 
-**Objetivo:** documentar se o Gemini Web pode ser usado em navegador integrado de hosts compatíveis e se há qualquer canal público e permitido entre extensão e navegador.
+**Objetivo:** demonstrar a comunicação integrada de ponta a ponta entre a extensão da IDE (Antigravity IDE), o processo auxiliar local Node.js e a extensão do Google Chrome via Native Messaging.
 
 **Critérios de aceite:**
 
-- Matriz com host, versão, sistema operacional, data e resultado explícito.
-- POC-02 e POC-03 registrados sem captura ou manipulação de credenciais.
-- POC-04 marcado como `pass`, `fail` ou `unsupported`, sem presumir compatibilidade do Antigravity IDE.
-- POC-05 contém decisão fundamentada por APIs públicas e termos aplicáveis.
-- Falhas bloqueadoras documentadas; nenhuma automação por sessão, cookies ou endpoints privados é implementada.
+- Matriz com host, versão, sistema operacional, data e resultado explícito atualizados.
+- POC-01 (Jetski Preview com conectividade básica), POC-02 (bloqueio do Gemini Web no integrado com hipótese provável de Webview) e POC-05A (PONG via Chrome Native Messaging) aprovadas e documentadas.
+- POC-05B estabelece canal IPC local seguro entre o Antigravity IDE e o Native Messaging Host, considerando o ciclo de vida do processo.
+- Nenhuma automação invasiva, extração de cookies ou acesso não autorizado a sessões web.
 
 ## Marcos posteriores
 

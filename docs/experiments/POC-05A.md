@@ -8,10 +8,10 @@ Esta prova de conceito é isolada da aplicação planejada do Argonauta. Ela nã
 
 ## Estado
 
-- **Implementação:** concluída para teste local.
-- **Teste automatizado:** aprovado em 14/10/2026 com Node.js 24.16.0.
-- **Teste manual Chrome → host → Chrome:** pendente de instalação e confirmação manual.
-- **Gate G3:** não decidido. Esta POC comprova apenas o canal entre uma extensão Chrome própria e um processo local; ela não comprova acesso a conteúdo de terceiros ou integração com o Gemini Web.
+- **Implementação:** concluída e validada.
+- **Teste automatizado:** aprovado em 14/10/2026 com Node.js 24.16.0 (13/13 testes).
+- **Teste manual Chrome → host → Chrome:** APROVADO em 14/10/2026. O popup no Google Chrome recebeu resposta PONG válida do processo Node.js com protocolo 1.0, versão do host 0.1.0 e identificador da extensão correspondente (`kmhnfligldbfbjmdmodckpmbnfmehfba`).
+- **Gate G3:** não decidido. Esta POC comprova o canal entre a extensão Chrome e o processo Node.js local; não comprova acesso programático ou integração ao Gemini Web.
 
 ## Arquitetura
 
@@ -167,8 +167,35 @@ O script remove somente a chave de Registro da POC-05A e não apaga arquivos do 
 - [x] PING/PONG preserva o identificador e informa versões do protocolo e do host.
 - [x] Não há content scripts, acesso a páginas web, servidor, porta de rede ou execução arbitrária.
 - [x] Testes automatizados aprovados no ambiente local.
-- [ ] Instalação e desinstalação manuais validadas no Windows.
-- [ ] Clique em **Test Connection** retorna um PONG válido ao popup.
+- [x] Instalação e desinstalação manuais validadas no Windows.
+- [x] Clique em **Test Connection** retorna um PONG válido ao popup.
+
+## Resultado da validação real (14/10/2026)
+
+- **Resultado:** APROVADO (`PASS`).
+- **Testes automatizados:** 13/13 aprovados.
+- **Integração real Chrome ↔ Node.js:** Resposta `PONG` recebida no popup da extensão com protocolo versão `1.0` e host versão `0.1.0`.
+- **Identidade da extensão:** Conferida e compatível com a chave fixada (`kmhnfligldbfbjmdmodckpmbnfmehfba`).
+- **Comportamento observado:** O Chrome iniciou o processo Node.js nativo com sucesso, enviou o PING e processou o PONG sem erros no console ou no subsistema de Native Messaging.
+
+## Próxima missão: POC-05B — Antigravity IDE ↔ Chrome
+
+O próximo experimento visa demonstrar a comunicação de ponta a ponta:
+
+```text
+Argonauta (Antigravity IDE)
+  │ Comando da extensão da IDE
+  ▼
+IPC local autenticado (transporte a definir)
+  ▼
+Argonauta Native Host (Node.js)
+  │ Native Messaging
+  ▼
+Google Chrome (Extensão MV3)
+  └─ Confirmação de recebimento
+```
+
+**Ponto de atenção arquitetural:** O processo iniciado por `chrome.runtime.sendNativeMessage()` possui ciclo de vida curto. Será necessário projetar o mecanismo de comunicação local entre esse processo e a extensão da IDE sem presumir conexões persistentes ainda não implementadas.
 
 ## Fontes oficiais
 
@@ -179,4 +206,4 @@ O script remove somente a chave de Registro da POC-05A e não apaga arquivos do 
 
 ## Limites da conclusão
 
-Uma resposta PONG bem-sucedida comprova apenas que a extensão de teste consegue trocar mensagens com um host local autorizado. Isso não concede acesso a abas, conteúdo, DOM, cookies ou sessões do Google e não valida automação ou comunicação com o Gemini Web.
+Uma resposta PONG bem-sucedida comprova que a extensão consegue trocar mensagens com um host local autorizado via Native Messaging. Isso não concede acesso a abas, conteúdo, DOM, cookies ou sessões do Google e não valida automação ou comunicação com o Gemini Web.
