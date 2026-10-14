@@ -65,7 +65,7 @@ O rollback do host está documentado em `docs/validation/POC-05A.md`. Ele exige 
 ## Estado do Git e próximos passos
 
 - Branch integrada: `refactor/monorepo-typescript`.
-- A `main` local e `origin/main` estão alinhadas no commit `ff438dd`.
+- A `main` local e `origin/main` estão sincronizadas no commit `9a04ed3`.
 - Arquivos históricos foram preservados por renomeações detectáveis pelo Git.
 - Artefatos ignorados que restaram sob o antigo `experiments/` foram removidos depois de confirmar que continham somente `dist`, `node_modules` e diretórios vazios.
 
