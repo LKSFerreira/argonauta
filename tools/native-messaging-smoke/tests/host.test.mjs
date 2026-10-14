@@ -3,8 +3,8 @@ import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 
-import { ORIGEM_PERMITIDA, VERSAO_PROTOCOLO } from '../native-host/src/mensagens.mjs';
-import { DecodificadorMensagensNativas, serializarMensagem } from '../native-host/src/protocolo.mjs';
+import { ORIGEM_PERMITIDA, VERSAO_PROTOCOLO } from '../native-host/src/messages.mjs';
+import { DecodificadorMensagensNativas, serializarMensagem } from '../native-host/src/protocol.mjs';
 
 const caminhoHost = fileURLToPath(new URL('../native-host/src/host.mjs', import.meta.url));
 

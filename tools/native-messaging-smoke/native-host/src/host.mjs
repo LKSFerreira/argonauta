@@ -1,5 +1,5 @@
-import { processarMensagem, validarOrigemChamadora } from './mensagens.mjs';
-import { DecodificadorMensagensNativas, serializarMensagem } from './protocolo.mjs';
+import { processarMensagem, validarOrigemChamadora } from './messages.mjs';
+import { DecodificadorMensagensNativas, serializarMensagem } from './protocol.mjs';
 
 let falhou = false;
 

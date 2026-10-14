@@ -2,8 +2,8 @@ import {
   classificarFalha,
   executarComLimiteTempo,
   type ErroTempoLimite,
-} from './controle-assincrono';
-import type { ResultadoCompatibilidade } from './relatorio';
+} from './async-control';
+import type { ResultadoCompatibilidade } from './report';
 
 export const CHAVE_TEMPORARIA = 'argonauta.poc05b.probe.temporario';
 

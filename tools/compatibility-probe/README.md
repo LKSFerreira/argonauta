@@ -43,7 +43,7 @@ O teste compila o TypeScript em modo estrito e valida:
 
 O Antigravity instalado não expõe atualmente um comando `antigravity` no `PATH`. Use o próprio IDE para iniciar o Extension Development Host:
 
-1. Abra `experiments/antigravity-extension-probe/` em uma janela do Antigravity IDE.
+1. Abra `tools/compatibility-probe/` em uma janela do Antigravity IDE.
 2. Execute `npm install` e `npm run compilar` no terminal integrado.
 3. Abra **Run and Debug**.
 4. Escolha **Executar probe no Antigravity**. A configuração usa apenas o depurador público `extensionHost` e abre uma nova janela do próprio Antigravity.

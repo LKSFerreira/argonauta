@@ -6,7 +6,7 @@ import {
   verificarArmazenamentoSeguro,
   type ArmazenamentoSeguro,
   type RegistrarDiagnostico,
-} from '../src/armazenamento-seguro';
+} from '../src/secure-storage';
 
 function criarRegistrador(eventos: string[]): RegistrarDiagnostico {
   return (identificador, evento) => eventos.push(`${identificador}:${evento}`);

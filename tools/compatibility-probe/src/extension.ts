@@ -5,19 +5,19 @@ import {
   verificarArmazenamentoSeguro,
   type EventoDiagnostico,
   type RegistrarDiagnostico,
-} from './armazenamento-seguro';
+} from './secure-storage';
 import {
   classificarFalha,
   executarComLimiteTempo,
   type ErroTempoLimite,
-} from './controle-assincrono';
+} from './async-control';
 import {
   criarRelatorio,
   formatarRelatorio,
   validarAusenciaDeDadosSensiveis,
   type AmbienteCompatibilidade,
   type ResultadoCompatibilidade,
-} from './relatorio';
+} from './report';
 
 const IDENTIFICADOR_COMANDO = 'argonauta.verificarCompatibilidade';
 const NOME_CANAL_SAIDA = 'Argonauta — Diagnóstico de Compatibilidade';

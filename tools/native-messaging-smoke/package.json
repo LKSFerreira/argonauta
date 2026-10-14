@@ -1,0 +1,16 @@
+{
+  "name": "@argonauta/native-messaging-smoke",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./protocol": "./native-host/src/protocol.mjs",
+    "./messages": "./native-host/src/messages.mjs"
+  },
+  "scripts": {
+    "test": "node --test tests/configuration.test.mjs tests/protocol.test.mjs tests/host.test.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

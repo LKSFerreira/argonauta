@@ -1,7 +1,7 @@
 {
   "name": "com.argonauta.poc05a",
   "description": "Host local da POC-05A do Argonauta",
-  "path": "executar-host.cmd",
+  "path": "run-host.cmd",
   "type": "stdio",
   "allowed_origins": [
     "chrome-extension://kmhnfligldbfbjmdmodckpmbnfmehfba/"

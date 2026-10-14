@@ -3,7 +3,7 @@ import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 
-import { ORIGEM_PERMITIDA } from '../native-host/src/mensagens.mjs';
+import { ORIGEM_PERMITIDA } from '../native-host/src/messages.mjs';
 
 const caminhoManifestoExtensao = new URL('../extension/manifest.json', import.meta.url);
 const caminhoManifestoHost = new URL(

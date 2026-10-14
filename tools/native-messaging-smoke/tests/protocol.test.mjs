@@ -2,12 +2,12 @@ import assert from 'node:assert/strict';
 import os from 'node:os';
 import test from 'node:test';
 
-import { processarMensagem, VERSAO_HOST, VERSAO_PROTOCOLO } from '../native-host/src/mensagens.mjs';
+import { processarMensagem, VERSAO_HOST, VERSAO_PROTOCOLO } from '../native-host/src/messages.mjs';
 import {
   DecodificadorMensagensNativas,
   LIMITE_MENSAGEM,
   serializarMensagem,
-} from '../native-host/src/protocolo.mjs';
+} from '../native-host/src/protocol.mjs';
 
 test('serializa JSON UTF-8 com tamanho binário correto', () => {
   const mensagem = { texto: 'Olá, Argonauta!' };

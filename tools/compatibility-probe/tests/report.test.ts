@@ -6,7 +6,7 @@ import {
   formatarRelatorio,
   validarAusenciaDeDadosSensiveis,
   type AmbienteCompatibilidade,
-} from '../src/relatorio';
+} from '../src/report';
 
 const AMBIENTE_SEGURO: AmbienteCompatibilidade = {
   nomeIde: 'Antigravity IDE',

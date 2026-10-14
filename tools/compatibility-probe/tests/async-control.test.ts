@@ -5,7 +5,7 @@ import {
   ErroCancelamento,
   ErroTempoLimite,
   executarComLimiteTempo,
-} from '../src/controle-assincrono';
+} from '../src/async-control';
 
 describe('controle assíncrono', () => {
   it('conclui uma operação dentro do limite', async () => {

@@ -1,5 +1,5 @@
 {
-  "name": "argonauta-antigravity-extension-probe",
+  "name": "@argonauta/compatibility-probe",
   "displayName": "Argonauta — Verificação de Compatibilidade",
   "description": "Gate isolado para validar APIs públicas necessárias no Antigravity IDE.",
   "version": "0.1.0",
@@ -26,7 +26,7 @@
   "activationEvents": [
     "onCommand:argonauta.verificarCompatibilidade"
   ],
-  "main": "./dist/src/extensao.js",
+  "main": "./dist/src/extension.js",
   "contributes": {
     "commands": [
       {
@@ -39,7 +39,8 @@
   "scripts": {
     "limpar": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\"",
     "compilar": "npm run limpar && tsc -p tsconfig.json",
-    "test": "npm run compilar && node --test dist/testes/configuracao.test.js dist/testes/controle-assincrono.test.js dist/testes/armazenamento-seguro.test.js dist/testes/relatorio.test.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "npm run compilar && node --test dist/tests/configuration.test.js dist/tests/async-control.test.js dist/tests/secure-storage.test.js dist/tests/report.test.js",
     "verificar": "npm test"
   },
   "devDependencies": {
