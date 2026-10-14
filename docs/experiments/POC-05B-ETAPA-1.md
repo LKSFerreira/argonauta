@@ -20,6 +20,7 @@ O diretório `experiments/chrome-native-bridge/` não foi modificado. Seu limite
 |---|---|
 | `src/tipos.ts` | Tipos TypeScript, versão `1.0`, limites e códigos de erro funcionais. |
 | `src/erros.ts` | Erros locais com códigos determinísticos e mensagens sem conteúdo recebido. |
+| `src/estrutura-json.ts` | Inspeção estrutural iterativa e compartilhada, sem executar comportamento do objeto. |
 | `src/enquadramento.ts` | Serialização e decodificação incremental de `[uint32][JSON UTF-8]`, sem transporte. |
 | `src/validacao.ts` | Validação estrita em tempo de execução, sem coerção ou mutação. |
 | `fixtures/` | Artefatos binários PING/PONG estáveis e manifesto verificável. |
@@ -50,7 +51,8 @@ Todos os contratos usam `versaoProtocolo: "1.0"`, recusam campos adicionais e po
 - nonces são strings base64url sem preenchimento, de 22 a 128 caracteres;
 - provas possuem 43 caracteres base64url, o tamanho textual de 32 bytes em base64url sem preenchimento;
 - códigos de `ERRO` permanecem restritos à lista da seção 8.3 do plano;
-- entradas com propriedades acessoras, funções, protótipos comportamentais ou referências circulares são rejeitadas antes da serialização;
+- entradas com getters, setters, `toJSON`, funções, proxies, protótipos comportamentais ou referências circulares são rejeitadas antes da serialização;
+- a inspeção usa travessia iterativa e rejeita estruturas acima de 64 níveis com `PROFUNDIDADE_EXCEDIDA`, sem depender da pilha de chamadas;
 - nenhuma validação calcula HMAC ou afirma que nonce, prova ou instante são criptograficamente válidos. Essas verificações pertencem a etapas posteriores.
 
 ### Ambiguidade resolvida de `TESTAR_PONTE`
@@ -61,7 +63,18 @@ O plano usa o mesmo discriminador `TESTAR_PONTE` para dois formatos: IDE → hos
 2. sua ausência seleciona a variante sanitizada host → Chrome, que exige `versaoHost`;
 3. misturar campos das variantes é rejeitado.
 
-A futura camada de roteamento deverá validar também qual variante é permitida em cada direção. Isso não foi implementado nesta etapa.
+A futura camada de transporte/roteamento deverá autorizar explicitamente qual variante é permitida em cada direção real da comunicação antes de aceitar a mensagem. A forma estrutural, sozinha, não concede autorização. Isso não foi implementado nesta etapa.
+
+## Limites de memória do enquadramento
+
+O decodificador não concatena o fragmento recebido ao estado interno. Ele copia incrementalmente somente os bytes necessários para:
+
+- um cabeçalho fixo de 4 bytes;
+- um único payload declarado, limitado a 65.536 bytes.
+
+Cada chamada de `adicionar()` aceita no máximo 65.540 bytes — um frame máximo completo — e retorna no máximo 32 mensagens concatenadas. Fragmentos ou lotes acima desses limites encerram o decoder com `FRAGMENTO_EXCEDIDO` ou `LOTE_EXCEDIDO`. Mensagens fragmentadas entre chamadas e frames concatenados dentro dos limites permanecem suportados. O parâmetro legado que permite reduzir o limite de payload é preservado, mas não pode ampliar o teto de 64 KiB.
+
+O fragmento fornecido continua pertencendo ao chamador e necessariamente já existe antes da chamada; o decoder o rejeita antes de realizar qualquer cópia e não retém referência a ele.
 
 ## Compatibilidade PING/PONG
 
@@ -135,7 +148,7 @@ Rodada final executada em Windows com Node.js 24.16.0 e npm 11.13.0:
 | Comando | Resultado observado |
 |---|---|
 | `npm run compilar` no novo experimento | código de saída 0 |
-| `npm test` no novo experimento | 47 aprovados, 0 falhas |
+| `npm test` no novo experimento | 53 aprovados, 0 falhas |
 | `npm test` na POC-05A | 13 aprovados, 0 falhas |
 | `npm test` no probe da Etapa 0 | 11 aprovados, 0 falhas |
 
@@ -151,6 +164,14 @@ A primeira compilação encontrou o TypeScript, mas não os tipos Node.js. O `ts
 
 A primeira rodada da nova suíte obteve 42 aprovações e 1 falha. O teste demonstrou que `JSON.stringify` podia executar um `getter` antes da validação. A fronteira passou a inspecionar descritores e a rejeitar propriedades acessoras, funções, protótipos comportamentais e ciclos antes do cálculo de tamanho. A rodada seguinte aprovou os 43 testes então existentes.
 
+### Robustez final antes da Etapa 2
+
+A revisão final identificou que a proteção anterior era aplicada por `validarMensagem()`, mas podia ser contornada ao chamar `serializarEnquadramento()` diretamente. A inspeção estrutural foi extraída para um módulo sem dependência do schema e agora é obrigatória nas duas entradas. Testes diretos comprovam que getter, setter, `toJSON` e armadilhas de `Proxy` não são executados.
+
+O decoder anterior usava `Buffer.concat()` com o fragmento completo antes de ler o cabeçalho. Ele foi substituído por uma máquina de estados incremental com buffers limitados, limite de fragmento e limite de frames por chamada.
+
+A validação estrutural recursiva foi substituída por uma pilha explícita. Objetos e arrays excessivamente profundos agora produzem `PROFUNDIDADE_EXCEDIDA`, sem `RangeError` não tratado.
+
 ## Divergências documentais sincronizadas
 
 - `POC-05A.md` dizia simultaneamente que o teste manual estava aprovado e pendente. A frase pendente foi corrigida conforme a aprovação manual registrada em 14/10/2026.
@@ -160,7 +181,8 @@ A primeira rodada da nova suíte obteve 42 aprovações e 1 falha. O teste demon
 ## Riscos e questões em aberto
 
 - O prefixo aprovado usa ordem nativa; no Windows validado isso significa little-endian. Uma futura portabilidade exige decisão explícita, sem alterar estas fixtures.
-- A união das duas variantes `TESTAR_PONTE` exige validação por direção na futura camada de roteamento.
+- A união das duas variantes `TESTAR_PONTE` exige autorização por direção na futura camada de transporte/roteamento; essa autorização não deve ser inferida apenas pelos campos presentes.
+- Os limites de 65.540 bytes por fragmento e 32 frames por chamada são deliberadamente conservadores para a POC. Qualquer alteração futura deve ser explícita e acompanhada de testes de memória e backpressure.
 - Formato e tamanho estrutural de nonces e provas não substituem geração segura, transcript canônico, comparação em tempo constante ou proteção contra replay.
 - A reutilização do toolchain da Etapa 0 evita instalação nesta etapa, mas cria uma dependência local documentada entre experimentos. Um toolchain compartilhado poderá ser decidido quando houver estrutura de produção.
 - Inspeção de DACL, bloqueio de clientes locais/remotos e encerramento de sockets continuam fora do escopo até a etapa de transporte autorizada.
