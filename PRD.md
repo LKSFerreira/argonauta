@@ -117,6 +117,16 @@ Oferecer uma experiência **IDE-first**, começando com um fluxo web **assistido
 7. **Adapters isolados.** UI e ferramentas de IDE não dependem de detalhes de DOM, endpoints ou implementação do Gemini Web.
 8. **Degradação elegante.** Se um fluxo web não funcionar, informar e oferecer modo externo/manual, sem invocar rotas não documentadas.
 9. **Open source de verdade.** Licença definida antes do primeiro release; dependências e artefatos auditáveis; changelog e security policy.
+10. **Uso por conta e risco (*at your own risk*).** O Argonauta é fornecido "no estado em que se encontra" (*AS IS*), sem garantias de qualquer natureza. O usuário utiliza a extensão por sua exclusiva conta e risco, assumindo total responsabilidade pelo cumprimento dos Termos de Serviço de provedores terceiros e pelas decisões de compartilhamento e alteração de código.
+
+### 5.1 Isenção de responsabilidade e termos do usuário (Disclaimer)
+
+O Argonauta é um projeto independente de código aberto. A sua utilização submete-se estritamente aos seguintes termos:
+
+- **Responsabilidade perante terceiros:** O usuário é o único e exclusivo responsável por ler, compreender e cumprir integralmente os Termos de Serviço, Políticas de Uso Aceitável e restrições de automação ou uso de API de quaisquer serviços de terceiros acessados (incluindo, sem limitação, Google, Microsoft, Anthropic ou OpenAI).
+- **Inexistência de garantias contra sanções:** O Argonauta, seus mantenedores e colaboradores não garantem que qualquer método de interação ou automação esteja isento de detecção, bloqueio de requisições, restrições temporárias ou suspensão/banimento de contas por parte de provedores terceiros. O usuário assume expressamente todo e qualquer risco relativo à sua conta ou assinatura.
+- **Fornecimento "no estado em que se encontra" (*AS IS*):** O software é disponibilizado sem garantias expressas ou implícitas de comercialização, adequação a um propósito específico, disponibilidade contínua ou ausência de erros.
+- **Responsabilidade sobre dados e código-fonte:** Cabe exclusivamente ao usuário revisar todo e qualquer trecho de código ou metadado antes de autorizar o envio a interfaces externas, bem como inspecionar minuciosamente diffs e patches gerados por IA antes de sua aplicação ao workspace. Os mantenedores não respondem por vazamentos de segredos, perdas de dados, regressões no código ou danos diretos/indiretos decorrentes do uso da ferramenta.
 
 ## 6. Hipóteses, certezas e riscos abertos
 
@@ -224,6 +234,7 @@ Legenda: **P0** = necessário para MVP; **P1** = próxima versão; **P2** = futu
 | FR-06 | Importar resposta/patch por colagem explícita | P0 | Parser | Resposta inválida mostra erro; nunca grava arquivo |
 | FR-07 | Preview de diff e aplicar/rejeitar mudanças | P0 | WorkspaceEdit | Só altera arquivos existentes/novos autorizados após confirmação |
 | FR-08 | Chat local com histórico da sessão **sem credenciais** | P0 | Storage local | Histórico pode ser limpo; política de retenção explícita |
+| FR-08b | Termo de ciência e responsabilidade (*First-run Disclaimer*) | P0 | UI / Storage local | Exibir aviso explícito na primeira execução informando o caráter experimental e o uso por conta e risco; exige confirmação do usuário antes de habilitar ações externas |
 | FR-09 | Estados visíveis de provedor (`Web Assisted`, `Official API`, indisponível) | P0 | Interfaces de adapter | UI não confunde modo manual e automático |
 | FR-10 | Cancelamento, feedback de erros e logs redigidos | P0 | Observabilidade | Sem stacktrace bruto ou token nos logs de usuário |
 | FR-11 | Theming claro/escuro, teclado e acessibilidade | P0 | VS Code Webview | Navegável por teclado; contraste adequado |
@@ -240,6 +251,7 @@ Legenda: **P0** = necessário para MVP; **P1** = próxima versão; **P2** = futu
 
 **Painel Argonauta:**
 
+- Aviso/modal de ciência e responsabilidade (*First-run Disclaimer*) na primeira inicialização, com link para as políticas e registro do aceite.
 - Cabeçalho com **nome do modo ativo** e indicador de disponibilidade.
 - Área de conversa/atividade (mensagens locais; no modo web assistido, **não** alegar que exibe transcrição sincronizada automaticamente).
 - Input de prompt com botões `Add Context`, `Open Gemini`, `Copy Prompt`, `Import Response`.
@@ -253,13 +265,14 @@ Legenda: **P0** = necessário para MVP; **P1** = próxima versão; **P2** = futu
 
 **Fluxo A — Perguntar sobre seleção (MVP):**
 
-1. Usuário seleciona código.
-2. Executa `Argonauta: Ask About Selection`.
-3. Confere a prévia de contexto, remove trechos sensíveis e aprova.
-4. Extensão gera/copia prompt e abre/foca Gemini Web conforme capacidade do host.
-5. Usuário envia a mensagem pela interface web.
-6. Usuário traz a resposta para o Argonauta por colagem/importação.
-7. Se houver patch, visualiza diff e decide aplicar/rejeitar.
+1. Na primeira execução, usuário visualiza e confirma ciência do termo de responsabilidade e uso por conta e risco.
+2. Usuário seleciona código.
+3. Executa `Argonauta: Ask About Selection`.
+4. Confere a prévia de contexto, remove trechos sensíveis e aprova.
+5. Extensão gera/copia prompt e abre/foca Gemini Web conforme capacidade do host.
+6. Usuário envia a mensagem pela interface web.
+7. Usuário traz a resposta para o Argonauta por colagem/importação.
+8. Se houver patch, visualiza diff e decide aplicar/rejeitar.
 
 **Fluxo B — Agente com API oficial (pós-MVP):**
 
@@ -427,6 +440,8 @@ argonauta/
 - [ ] Arquivos sensíveis são excluídos por padrão e documentados.
 - [ ] Comportamento em workspace não confiável é seguro e explícito.
 - [ ] Modo `Web Assisted` identificado na UI, README e descrição da loja.
+- [ ] Termo de uso por conta e risco (*First-run Disclaimer*) implementado na primeira execução, exigindo confirmação explícita antes de liberar integrações externas.
+- [ ] Avisos de isenção de responsabilidade (*disclaimer*) destacados no `README.md`, `SECURITY.md` e na documentação de lançamento.
 - [ ] Testes unitários, lint, empacotamento VSIX e checagens de segurança aprovados.
 - [ ] `README`, `SECURITY`, licença, matriz de suporte e changelog revisados.
 - [ ] Validação manual documentada **no Antigravity IDE**. VS Code só entra na lista de suporte **quando efetivamente testado**; não é requisito do MVP.
@@ -560,6 +575,7 @@ Essas promessas **não devem ser usadas** sem documentação técnica reproduzí
 | Fragmentação entre VS Code e Antigravity | Médio / Alto | Compatibility layer e testes por host |
 | Promessas maiores que o MVP | Alto / Alto | Mensagem precisa e roadmap público |
 | Dependência de interface web que muda | Alto / Alto | Evitar DOM scraping; adapters e fallback |
+| Sanções ou suspensão de conta de terceiros por uso indevido ou automação não tolerada | Baixo no modo assistido manual / Médio se houver automação | Uso estritamente por conta e risco do usuário; disclaimer obrigatório na UI/docs; recusa de scrapers/bypass no MVP |
 
 ## 17. Decisões abertas (ADR backlog)
 
