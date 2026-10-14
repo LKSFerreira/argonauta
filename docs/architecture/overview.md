@@ -45,6 +45,7 @@ Valida a compatibilidade binária entre o pacote de protocolo e a implementaçã
 
 - [ADR-0001 — Arquitetura do monorepo TypeScript](decisions/0001-monorepo-architecture.md)
 - [ADR-0002 — Gate de segurança do Windows Named Pipe com `node:net`](decisions/0002-node-net-security-gate.md)
+- [ADR-0003 — Helper Win32 para o gate de segurança do Named Pipe](decisions/0003-win32-named-pipe-security-probe.md)
 - [Plano de migração](repository-migration-plan.md)
 - [Desenho da ponte futura](bridge-design.md)
 
@@ -52,4 +53,4 @@ Valida a compatibilidade binária entre o pacote de protocolo e a implementaçã
 
 O transporte básico por Windows Named Pipe foi comprovado com `node:net`, mas a DACL efetiva permaneceu legível por `Everyone` e `Anonymous`, e uma conexão pelo namespace `\\localhost\pipe` foi aceita. A API pública avaliada não expõe a criação com descritor de segurança explícito nem `PIPE_REJECT_REMOTE_CLIENTS`.
 
-Por isso, `packages/ipc`, o harness e o comando da IDE não foram implementados. Consulte o [relatório do gate](../validation/ipc-transport.md).
+Por isso, `packages/ipc`, o harness e o comando da IDE não foram implementados. A investigação do helper Win32 também permanece bloqueada porque o ambiente autorizado não contém toolchain C/C++ nem Windows SDK. Consulte o [relatório do gate `node:net`](../validation/ipc-transport.md) e a [investigação Win32](../validation/ipc-win32-feasibility.md).
