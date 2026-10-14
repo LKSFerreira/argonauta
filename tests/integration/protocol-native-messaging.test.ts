@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
+import { createRequire } from 'node:module';
 import { dirname, resolve } from 'node:path';
-import { fileURLToPath, pathToFileURL } from 'node:url';
 import { describe, it } from 'node:test';
 
-import { DecodificadorEnquadramento, serializarEnquadramento } from '../src/enquadramento.js';
+import { DecodificadorEnquadramento, serializarEnquadramento } from '@argonauta/protocol';
 
 interface RegistroFixture {
   readonly arquivo: string;
@@ -41,8 +41,9 @@ interface ModuloMensagensPoc05A {
   readonly processarMensagem: (mensagem: unknown) => unknown;
 }
 
-const diretorioExperimento = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
-const diretorioFixtures = resolve(diretorioExperimento, 'fixtures');
+const exigir = createRequire(import.meta.url);
+const diretorioPacoteProtocolo = dirname(exigir.resolve('@argonauta/protocol/package.json'));
+const diretorioFixtures = resolve(diretorioPacoteProtocolo, 'fixtures');
 const IDENTIDADE_FIXTURES = {
   'ping-v1-windows-le.bin': {
     comprimentoPayload: 71,
@@ -78,29 +79,13 @@ async function carregarManifesto(): Promise<ManifestoFixtures> {
 }
 
 async function carregarModuloPoc05A(): Promise<ModuloProtocoloPoc05A> {
-  const caminho = resolve(
-    diretorioExperimento,
-    '..',
-    'chrome-native-bridge',
-    'native-host',
-    'src',
-    'protocolo.mjs'
-  );
-  const moduloDesconhecido: unknown = await import(pathToFileURL(caminho).href);
+  const moduloDesconhecido: unknown = await import('@argonauta/native-messaging-smoke/protocol');
   assert.ok(ehModuloPoc05A(moduloDesconhecido), 'A API aprovada da POC-05A mudou.');
   return moduloDesconhecido;
 }
 
 async function carregarMensagensPoc05A(): Promise<ModuloMensagensPoc05A> {
-  const caminho = resolve(
-    diretorioExperimento,
-    '..',
-    'chrome-native-bridge',
-    'native-host',
-    'src',
-    'mensagens.mjs'
-  );
-  const moduloDesconhecido: unknown = await import(pathToFileURL(caminho).href);
+  const moduloDesconhecido: unknown = await import('@argonauta/native-messaging-smoke/messages');
   assert.ok(ehModuloMensagensPoc05A(moduloDesconhecido), 'O processador da POC-05A mudou.');
   return moduloDesconhecido;
 }

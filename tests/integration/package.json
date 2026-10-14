@@ -1,0 +1,24 @@
+{
+  "name": "@argonauta/integration-tests",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "limpar": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\"",
+    "compilar": "npm run limpar && npm --workspace @argonauta/protocol run compilar && tsc -p tsconfig.json",
+    "typecheck": "npm --workspace @argonauta/protocol run compilar && tsc -p tsconfig.json --noEmit",
+    "test": "npm run compilar && node --test dist/protocol-native-messaging.test.js",
+    "verificar": "npm test"
+  },
+  "dependencies": {
+    "@argonauta/native-messaging-smoke": "0.1.0",
+    "@argonauta/protocol": "0.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "20.19.43",
+    "typescript": "5.9.3"
+  }
+}
