@@ -41,10 +41,10 @@ npm --workspace @argonauta/integration-tests test
 
 ## Antigravity IDE
 
-Abra `tools/compatibility-probe/` no Antigravity IDE, execute `npm run compilar` pela raiz ou pelo workspace e inicie a configuração **Executar probe no Antigravity**. O roteiro detalhado está em [tools/compatibility-probe/README.md](../../tools/compatibility-probe/README.md).
+Abra `tools/compatibility-probe/` no Antigravity IDE, execute `npm run compilar` pela raiz ou pelo workspace e inicie a configuração **Executar probe no Antigravity**. Consulte o [roteiro de teste manual no Antigravity](../validation/manual-tests/antigravity-compatibility.md) e os [detalhes técnicos do probe](../../tools/compatibility-probe/README.md).
 
 ## Chrome Native Messaging
 
-O teste automatizado não altera o Registro. A instalação e desinstalação manuais estão descritas em [POC-05A.md](../validation/POC-05A.md).
+O teste automatizado não altera o Registro. A instalação, a validação e a desinstalação estão descritas no [roteiro de teste manual do Chrome](../validation/manual-tests/chrome-native-messaging.md). O histórico completo da POC permanece em [POC-05A.md](../validation/POC-05A.md).
 
-Depois de mover o repositório, reinstale manualmente o host para atualizar o caminho absoluto. A validação no Chrome deve ser registrada como `pending_manual_validation` até a confirmação visual do PONG.
+Depois de mover o repositório, reinstale manualmente o host para atualizar o caminho absoluto. A repetição após a migração foi aprovada em 14/10/2026 com PONG no protocolo `1.0`; novas mudanças de caminho exigem uma nova validação manual.

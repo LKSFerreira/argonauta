@@ -85,6 +85,6 @@ Não use VS Code para esta validação. O resultado somente comprova compatibili
 | Regressão da POC-05A | `pass` | 13/13 testes originais aprovados em 14/10/2026 |
 | Carregamento no Antigravity IDE | `pass` | Confirmado manualmente pelo mantenedor em 14/10/2026 |
 | Comando na paleta | `pass` | Confirmado manualmente; duplicação do título corrigida no manifesto |
-| Comando e APIs após a correção | Pendente de nova validação manual | Repetir o roteiro e registrar o canal de diagnóstico |
+| Comando e APIs após a correção | `pass` | 9 `pass`, 0 `fail` e 0 `unsupported`; progresso, mensagem informativa e limpeza final concluídos em 14/10/2026 |
 
 Resultados manuais não são inferidos a partir dos testes automatizados.
